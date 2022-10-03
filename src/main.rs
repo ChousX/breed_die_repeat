@@ -38,14 +38,11 @@ impl MobBuilder {
 }
 
 impl MobBuilder {
-    pub fn new() -> Self {
-        Self::default()
+    fn transform(&self) -> Transform {
+        let (x, y) = self.position.unwrap_or((0.0, 1.0));
+        Transform::from_xyz(x, y, 0.0)
     }
-
-    pub fn add_position(&mut self, x: f32, y: f32) -> &mut Self {
-        self.position = Some((x, y));
-        self
-    }
+}
 
     pub fn add_health(&mut self, health: u16) -> &mut Self {
         self.health = Some(health);
