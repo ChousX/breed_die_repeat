@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 mod seenbuild;
+mod camera;
 
 fn main() {
     App::new()
@@ -20,6 +21,7 @@ fn init(
 // Breed die repeat
 //
 
+#[derive(Component)]
 pub struct Mob;
 
 #[derive(Default)]
@@ -32,7 +34,7 @@ pub struct MobBuilder {
 
 impl MobBuilder {
     fn transform(&self) -> Transform {
-        let (x, y) = self.position.unwrap_or((0.0, 1.0));
+        let (x, y) = self.position.unwrap_or((0.0, 0.25));
         Transform::from_xyz(x, y, 0.0)
     }
 }
@@ -65,6 +67,7 @@ impl MobBuilder {
                 transform: self.transform(),
                 ..default()
             })
+            .insert(Mob)
             .id()
     }
 }
