@@ -8,6 +8,7 @@ fn main() {
     App::new()
         .add_startup_system(init)
         .add_plugins(DefaultPlugins)
+        .add_plugin(recorce::ResorcePlugin)
         .run();
 }
 

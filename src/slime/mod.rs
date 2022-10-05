@@ -1,4 +1,5 @@
 use bevy::{prelude::*};
+use crate::recorce::{ResorceType, ResorceSpawnEvent};
 
 #[derive(Bundle)]
 pub struct SlimeBundle {
@@ -59,10 +60,6 @@ fn metabolism(mut query: Query<(&Metabolism, &mut Mass, &mut Slime)>, time: Res<
     }
 }
 
-fn despawn(commands: &mut Commands, entitiy: Entity){
-    commands.entity(entity).despawn_recursive();
-}
-
 fn death(
     mut commands: Commands,
     mut query: Query<(&Mass, Entity, &Transform)>,
@@ -70,7 +67,7 @@ fn death(
 ){
     for (mass, entity, transform) in query.iter(){
         if mass.zero_or_less(){
-            despawn(&mut commands, entitiy);
+            commands.entity(entity).despawn_recursive();
             event.send(ResorceSpawnEvent{
                 quontity: 10.0,
                 resorce_type: ResorceType::Slime,
