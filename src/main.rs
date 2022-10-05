@@ -2,6 +2,7 @@ use bevy::prelude::*;
 mod input_bindings;
 mod seenbuild;
 mod slime;
+mod recorce;
 
 fn main() {
     App::new()
