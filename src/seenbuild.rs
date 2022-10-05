@@ -12,6 +12,7 @@ pub struct SeenBuilder {
     shadows: bool,
     light_position: Option<(f32, f32, f32)>,
 
+    camera: bool,
     camera_position: Option<(f32, f32, f32)>,
     camera_looking_at: Option<(Vec3, Vec3)>,
 }
@@ -84,7 +85,7 @@ impl SeenBuilder {
     }
 
     pub fn build(
-        self,
+        &self,
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -112,9 +113,11 @@ impl SeenBuilder {
         });
 
         //spawing camera
-        commands.spawn_bundle(Camera3dBundle {
-            transform: self.get_camera_transform(),
-            ..default()
-        });
+        if self.camera {
+            commands.spawn_bundle(Camera3dBundle {
+                transform: self.get_camera_transform(),
+                ..default()
+            });
+        }
     }
 }
