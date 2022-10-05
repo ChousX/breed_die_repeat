@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+mod input_bindings;
 mod seenbuild;
-mod camera;
+mod slime;
 
 fn main() {
     App::new()
