@@ -1,13 +1,12 @@
 use bevy::prelude::*;
-use bevy_flycam::PlayerPlugin;
 mod seenbuild;
+mod slime;
+mod recorce;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_startup_system(init)
-        .add_startup_system(spawn_mob)
-        .add_plugin(PlayerPlugin)
+        .add_plugin(recorce::ResorcePlugin)
         .run();
 }
 
@@ -41,12 +40,8 @@ pub fn spawn_mob(
         .insert(Mob);
 }
 
-
-
-#[derive(Component)]
-pub struct Mob;
 // Breed die repeat
-/*
+//
 
 #[derive(Component)]
 pub struct Mob;
@@ -81,13 +76,8 @@ impl MobBuilder {
         self
     }
 
-    pub fn add_position(&mut self, x: f32, y: f32, z: f32) -> &mut Self{
-        self.position = Some((x, y, z));
-        self
-    }
-
     pub fn run(
-        &self,
+        self,
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -102,4 +92,7 @@ impl MobBuilder {
             .insert(Mob)
             .id()
     }
-}*/
+}
+
+#[cfg(test)]
+mod tests {}
