@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+
 /// for prototyping
 /// Requires: DefaultPlugins
 /// will spawn a plain a light and a camera
@@ -81,6 +82,11 @@ impl SeenBuilder {
 
     pub fn add_color(&mut self, red: f32, green: f32, blue: f32) -> &mut Self {
         self.plane_color = Some(Color::rgb(red, green, blue));
+        self
+    }
+
+    pub fn camera_state(&mut self, state: bool) -> &mut Self {
+        self.camera = state;
         self
     }
 

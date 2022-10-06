@@ -12,5 +12,5 @@ opt-level = 3
 
 [dependencies]
 bevy = "0.8.1"
-bevy_flycam = "*"
 bevy_rapier3d = {version = "0.17.0", features= ["debug-render", "parallel", "enhanced-determinism"]}
+bevy-inspector-egui = "0.13.0"

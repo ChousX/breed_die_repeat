@@ -1,5 +1,21 @@
+use crate::recorce::{ResorceSpawnEvent, ResorceType};
 use bevy::{prelude::*};
-use crate::recorce::{ResorceType, ResorceSpawnEvent};
+use bevy_inspector_egui::Inspectable;
+
+pub struct SlimePlugin;
+impl Plugin for SlimePlugin {
+    fn build(&self, app: &mut App) {
+        app.add_system(metabolism)
+            .add_system(death)
+            .add_system(metabolism);
+            //thinky thingy
+            //event slime move reader
+            //digestion
+    }
+    fn name(&self) -> &str {
+        "SlimePlugin"
+    }
+}
 
 #[derive(Bundle)]
 pub struct SlimeBundle {
@@ -10,13 +26,11 @@ pub struct SlimeBundle {
     slime: Slime,
 }
 
-#[derive(Component, Default)]
-pub struct Slime {
-    pub starving: bool,
-}
+#[derive(Component, Default, Inspectable)]
+pub struct Slime;
 
 /// Mass max >= min * 2 else it will not be able to bud
-#[derive(Component, Default)]
+#[derive(Component, Default, Inspectable)]
 pub struct Mass {
     current: f32,
     max: f32,
@@ -49,38 +63,43 @@ impl Mass {
     }
 }
 
-#[derive(Component, Default, Deref)]
+#[derive(Component, Default, Deref, Inspectable)]
 pub struct Metabolism(f32);
 
-fn metabolism(mut query: Query<(&Metabolism, &mut Mass, &mut Slime)>, time: Res<Time>) {
-    for (metabolism, mut mass, mut slime) in query.iter_mut() {
+fn metabolism(
+    mut commands: Commands,
+    mut query: Query<(&Metabolism, &mut Mass, Entity)>,
+    time: Res<Time>,
+) {
+    for (metabolism, mut mass, entity) in query.iter_mut() {
         if mass.loss(metabolism.0 * time.delta_seconds()) {
-            slime.starving = true;
+            commands.entity(entity).insert(Starving);
         }
     }
 }
 
 fn death(
     mut commands: Commands,
-    mut query: Query<(&Mass, Entity, &Transform)>,
+    query: Query<(&Mass, Entity, &Transform)>,
     mut event: EventWriter<ResorceSpawnEvent>,
-){
-    for (mass, entity, transform) in query.iter(){
-        if mass.zero_or_less(){
+) {
+    for (mass, entity, transform) in query.iter() {
+        if mass.zero_or_less() {
             commands.entity(entity).despawn_recursive();
-            event.send(ResorceSpawnEvent{
+            event.send(ResorceSpawnEvent {
                 quontity: 10.0,
                 resorce_type: ResorceType::Slime,
-                position: transform.translation
+                position: transform.translation,
             })
         }
     }
 }
 
-
-
-#[derive(Component, Default)]
+#[derive(Component, Default, Inspectable)]
 pub struct Enderance(f32);
 
-#[derive(Component, Default)]
+#[derive(Component, Default, Inspectable)]
 pub struct Speed(f32);
+
+#[derive(Component)]
+pub struct Starving;
