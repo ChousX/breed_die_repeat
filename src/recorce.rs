@@ -47,7 +47,7 @@ fn resorce_spawner(
     for event in events.iter() {
         //color should be resorce type dependent
         //position shoudle evenchualy be random aroun a small area
-        
+
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 0.01 })),

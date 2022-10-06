@@ -1,5 +1,5 @@
 use crate::recorce::{ResorceSpawnEvent, ResorceType};
-use bevy::{prelude::*};
+use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
 
 pub struct SlimePlugin;
@@ -8,9 +8,9 @@ impl Plugin for SlimePlugin {
         app.add_system(metabolism)
             .add_system(death)
             .add_system(metabolism);
-            //thinky thingy
-            //event slime move reader
-            //digestion
+        //thinky thingy
+        //event slime move reader
+        //digestion
     }
     fn name(&self) -> &str {
         "SlimePlugin"
