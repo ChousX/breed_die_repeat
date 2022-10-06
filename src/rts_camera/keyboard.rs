@@ -1,8 +1,8 @@
-use bevy::prelude::*;
 use super::CameraMotionEvent;
+use bevy::prelude::*;
 pub fn move_camera_keybored(
     keyboard_input: Res<Input<KeyCode>>,
-    q: Query<(&RtsKeyboard)>,
+    q: Query<&RtsKeyboard>,
     mut event: EventWriter<CameraMotionEvent>,
 ) {
     let mut velocity = Vec3::ZERO;

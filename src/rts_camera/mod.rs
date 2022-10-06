@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 mod keyboard;
 mod mouse;
-use keyboard::{RtsKeyboard, move_camera_keybored, rotate_camera_keybored};
-use mouse::{RtsMouse, move_camera_mouse, rotate_camera_mouse};
+use keyboard::{move_camera_keybored, rotate_camera_keybored, RtsKeyboard};
+use mouse::{move_camera_mouse, rotate_camera_mouse, RtsMouse};
 
 pub fn build_camera(commands: &mut Commands, transform: Transform) {
     commands
@@ -32,6 +32,7 @@ impl Plugin for RtsCameraPlugin {
     }
 }
 
+//todo finish adding some slide speed
 #[derive(Component)]
 pub struct RtsCamera {
     pub enabled: bool,
@@ -77,11 +78,4 @@ fn camera_motion(
             }
         }
     }
-
 }
-
-
-
-
-
-
