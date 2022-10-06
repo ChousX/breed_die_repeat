@@ -2,8 +2,8 @@ use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
 use std::{hash::Hasher, time::Duration};
 
-pub struct ResorcePlugin;
-impl Plugin for ResorcePlugin {
+pub struct mResorcePlugin;
+impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
             .add_event::<ResorceDespawnEvent>()

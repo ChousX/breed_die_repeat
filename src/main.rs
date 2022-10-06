@@ -8,9 +8,9 @@ mod slime;
 
 fn main() {
     App::new()
-        .add_plugin(WorldInspectorPlugin::new())
         .add_plugins(DefaultPlugins)
-        .add_plugin(recorce::ResorcePlugin)
+        .add_plugin(WorldInspectorPlugin::new())
+        .add_plugin(recorce::mResorcePlugin)
         .add_plugin(rts_camera::RtsCameraPlugin)
         .add_startup_system(init)
         .run();
