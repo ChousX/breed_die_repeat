@@ -70,7 +70,7 @@ impl Default for RtsKeyboard {
             rotait_left: Box::new([KeyCode::Q]),
             rotait_right: Box::new([KeyCode::E]),
 
-            move_sensitivity: (2.0, 0.1),
+            move_sensitivity: (10.0, 0.1),
             rotate_sensitivity: std::f32::consts::PI / 100.,
         }
     }
