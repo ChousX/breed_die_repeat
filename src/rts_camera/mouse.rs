@@ -2,7 +2,6 @@ use std::ops::Neg;
 
 use super::CameraMotionEvent;
 use bevy::{
-    ecs::entity,
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
 };
@@ -27,7 +26,9 @@ pub fn move_camera_mouse(
         let mut velocity = Vec3::ZERO;
         for event in motion_event.iter() {
             let mut delta = event.delta;
-            if invert_drag {delta = delta.neg()}
+            if invert_drag {
+                delta = delta.neg()
+            }
             velocity += Vec3::new(delta.x, 0., delta.y);
         }
         if velocity != Vec3::ZERO {
@@ -39,11 +40,25 @@ pub fn move_camera_mouse(
 pub fn rotate_camera_mouse(
     buttons: Res<Input<MouseButton>>,
     mut motion_evr: EventReader<MouseMotion>,
+    mut output: EventWriter<CameraMotionEvent>,
 ) {
 }
 
-pub fn zoom_camera(mut scroll_evr: EventReader<MouseWheel>) {
-    use bevy::input::mouse::MouseScrollUnit;
+pub fn zoom_camera(
+    mut scroll_evr: EventReader<MouseWheel>,
+    mut output: EventWriter<CameraMotionEvent>,
+    camera_options: Query<&RtsMouse>,
+) {
+    for opt in camera_options.iter() {
+        let mut scroll = 0.0;
+        for ev in scroll_evr.iter() {
+            scroll += ev.y * opt.zoom_sensitivity;
+        }
+
+        if scroll != 0.0 {
+            output.send(CameraMotionEvent::Zoom(scroll))
+        }
+    }
 }
 
 #[derive(Component)]
@@ -66,7 +81,7 @@ impl Default for RtsMouse {
             drag: MouseButton::Right,
             drag_sensitivity: (10., std::f32::consts::PI / 1000.),
             zoom_sensitivity: 1.,
-            invert_drag: true
+            invert_drag: true,
         }
     }
 }

@@ -33,7 +33,6 @@ pub fn rotate_camera_keybored(
     q: Query<&RtsKeyboard>,
     mut event: EventWriter<CameraMotionEvent>,
 ) {
-    
 }
 
 type KeyBinding = Box<[KeyCode]>;
