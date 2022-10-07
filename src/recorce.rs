@@ -7,7 +7,7 @@ impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
             .add_system(resorce_spawner)
-            .add_system(shrink)
+            // .add_system(shrink)
             .add_system(decay);
     }
 }
@@ -63,7 +63,7 @@ fn resorce_spawner(
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: size * 0.1})),
                 material: materials.add(Color::rgb(0.2, 0.5, 0.0).into()),
-                transform: Transform::from_translation(translation),
+                transform: Transform::from_translation(translation).with_scale(Vec3::splat(1.0)),
                 ..default()
             })
             .insert(mResorce {
@@ -78,11 +78,11 @@ fn resorce_spawner(
 
 fn decay(
     mut commands: Commands,
-    mut query: Query<(&mut mResorce, Entity)>,
+    mut query: Query<(&mut mResorce, &mut Transform, Entity)>,
     time: Res<Time>,
 ) {
 
-    for (mut resorce, entity) in query.iter_mut() {
+    for (mut resorce, mut transform, entity) in query.iter_mut() {
         resorce.timer.tick(time.delta());
         if resorce.timer.finished() {
             commands.entity(entity).despawn_recursive()
@@ -90,10 +90,4 @@ fn decay(
     }
 }
 
-fn shrink(
-    mut query: Query<(&mut mResorce, &mut Transform)>,
-){
-    for (resorce, mut transform) in query.iter_mut(){
-        transform.scale -= resorce.timer.elapsed_secs() * 0.00001
-    }
-}
+
