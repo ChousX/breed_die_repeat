@@ -89,7 +89,7 @@ fn death(
             event.send(ResorceSpawnEvent {
                 quontity: 10.0,
                 resorce_type: ResorceType::Slime,
-                position: transform.translation,
+                position: (transform.translation.x, transform.translation.z),
             })
         }
     }

@@ -5,6 +5,7 @@ mod recorce;
 mod rts_camera;
 mod seenbuild;
 mod slime;
+mod game_govener;
 
 fn main() {
     App::new()
@@ -12,6 +13,7 @@ fn main() {
         .add_plugin(WorldInspectorPlugin::new())
         .add_plugin(recorce::mResorcePlugin)
         .add_plugin(rts_camera::RtsCameraPlugin)
+        .add_plugin(game_govener::GameGovenerPlugin)
         .add_startup_system(init)
         .run();
 }

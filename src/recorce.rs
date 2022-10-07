@@ -34,7 +34,17 @@ impl Default for ResorceType {
 pub struct ResorceSpawnEvent {
     pub quontity: f32,
     pub resorce_type: ResorceType,
-    pub position: Vec3,
+    pub position: (f32, f32),
+}
+
+impl Default for ResorceSpawnEvent{
+    fn default() -> Self {
+        Self{
+            quontity: 10.0,
+            resorce_type: ResorceType::Slime,
+            position: (0., 0.)
+        }
+    }
 }
 
 const RESORCE_LIFE_TIME_RATE: f32 = 10.0;
@@ -48,12 +58,13 @@ fn resorce_spawner(
     for event in events.iter() {
         //color should be resorce type dependent
         //position shoudle evenchualy be random aroun a small area
-
+        let size = event.quontity * 0.5;
+        let translation = Vec3::new(event.position.0, size * 0.5, event.position.1);
         commands
             .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.01 })),
-                material: materials.add(Color::rgb(0.0, 0.2, 0.6).into()),
-                transform: Transform::from_translation(event.position),
+                mesh: meshes.add(Mesh::from(shape::Cube { size: size * 0.1})),
+                material: materials.add(Color::rgb(0.2, 0.5, 0.0).into()),
+                transform: Transform::from_translation(translation),
                 ..default()
             })
             .insert(mResorce {
