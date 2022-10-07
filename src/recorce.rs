@@ -6,9 +6,8 @@ pub struct mResorcePlugin;
 impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
-            .add_event::<ResorceDespawnEvent>()
             .add_system(resorce_spawner)
-            .add_system(resorce_despawner)
+            .add_system(shrink)
             .add_system(decay);
     }
 }
@@ -75,24 +74,26 @@ fn resorce_spawner(
     }
 }
 
-#[derive(Deref)]
-struct ResorceDespawnEvent(Entity);
 
-fn resorce_despawner(mut commands: Commands, mut events: EventReader<ResorceDespawnEvent>) {
-    for entity in events.iter() {
-        commands.entity(**entity).despawn_recursive();
+
+fn decay(
+    mut commands: Commands,
+    mut query: Query<(&mut mResorce, Entity)>,
+    time: Res<Time>,
+) {
+
+    for (mut resorce, entity) in query.iter_mut() {
+        resorce.timer.tick(time.delta());
+        if resorce.timer.finished() {
+            commands.entity(entity).despawn_recursive()
+        }
     }
 }
 
-fn decay(
-    mut query: Query<(&mut mResorce, Entity)>,
-    time: Res<Time>,
-    mut events: EventWriter<ResorceDespawnEvent>,
-) {
-    for (mut resorce, entitiy) in query.iter_mut() {
-        resorce.timer.tick(time.delta());
-        if resorce.timer.finished() {
-            events.send(ResorceDespawnEvent(entitiy));
-        }
+fn shrink(
+    mut query: Query<(&mut mResorce, &mut Transform)>,
+){
+    for (resorce, mut transform) in query.iter_mut(){
+        transform.scale -= resorce.timer.elapsed_secs() * 0.00001
     }
 }
