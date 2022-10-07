@@ -12,36 +12,48 @@ pub fn move_camera_mouse(
     mut output: EventWriter<CameraMotionEvent>,
     mut motion_event: EventReader<MouseMotion>,
 ) {
-    //todo this works but it really all should be nested in the option loop
-    let mut enabled = false;
-    let mut invert_drag = false;
     for option in camera_options.iter() {
-        invert_drag = option.invert_drag;
         if key.pressed(option.drag) || key.just_pressed(option.drag) {
-            enabled = true;
-            break;
-        }
-    }
-    if enabled {
-        let mut velocity = Vec3::ZERO;
-        for event in motion_event.iter() {
-            let mut delta = event.delta;
-            if invert_drag {
-                delta = delta.neg()
+            let mut velocity = Vec3::ZERO;
+            for event in motion_event.iter() {
+                let mut delta = event.delta;
+                if option.invert_drag {
+                    delta = delta.neg()
+                }
+                velocity += Vec3::new(delta.x, 0., delta.y);
             }
-            velocity += Vec3::new(delta.x, 0., delta.y);
-        }
-        if velocity != Vec3::ZERO {
-            output.send(CameraMotionEvent::Move(velocity));
+            if velocity != Vec3::ZERO {
+                output.send(CameraMotionEvent::Move(velocity * option.drag_sensitivity));
+            }
+            continue;
         }
     }
 }
 
 pub fn rotate_camera_mouse(
-    buttons: Res<Input<MouseButton>>,
-    mut motion_evr: EventReader<MouseMotion>,
+    key: Res<Input<MouseButton>>,
+    camera_options: Query<&RtsMouse>,
+    mut motion_event: EventReader<MouseMotion>,
     mut output: EventWriter<CameraMotionEvent>,
 ) {
+    for option in camera_options.iter() {
+        if key.pressed(option.rotate) || key.just_pressed(option.rotate) {
+            let mut velocity = 0.0;
+            for event in motion_event.iter() {
+                let mut delta = event.delta;
+                if option.invert_drag {
+                    delta = delta.neg()
+                }
+                velocity += delta.x + delta.y;
+            }
+            if velocity != 0.0 {
+                output.send(CameraMotionEvent::Rotate(
+                    velocity * option.rotate_sensitivity,
+                ));
+            }
+            continue;
+        }
+    }
 }
 
 pub fn zoom_camera(
@@ -69,7 +81,7 @@ pub struct RtsMouse {
     pub invert_drag: bool,
 
     pub rotate_sensitivity: f32,
-    pub drag_sensitivity: (f32, f32),
+    pub drag_sensitivity: f32,
     pub zoom_sensitivity: f32,
 }
 
@@ -77,10 +89,10 @@ impl Default for RtsMouse {
     fn default() -> Self {
         Self {
             rotate: MouseButton::Middle,
-            rotate_sensitivity: std::f32::consts::PI / 1000.,
+            rotate_sensitivity: std::f32::consts::PI / 10.,
             drag: MouseButton::Right,
-            drag_sensitivity: (10., std::f32::consts::PI / 1000.),
-            zoom_sensitivity: 1.,
+            drag_sensitivity: 5.,
+            zoom_sensitivity: 5.,
             invert_drag: true,
         }
     }

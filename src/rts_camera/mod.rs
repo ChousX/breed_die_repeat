@@ -76,7 +76,7 @@ fn camera_motion(
             CameraMotionEvent::Rotate(angle) => transform.rotate_y(*angle * time.delta_seconds()),
             CameraMotionEvent::Zoom(zoom) => {
                 let mut angle = transform.translation.clone().normalize().neg();
-                if angle.y <= 0.0{
+                if angle.y <= 0.0 {
                     angle.y = 0.1
                 }
                 transform.translation += angle * *zoom;
