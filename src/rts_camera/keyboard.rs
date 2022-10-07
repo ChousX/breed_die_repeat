@@ -28,7 +28,13 @@ pub fn move_camera_keybored(
     }
 }
 
-pub fn rotate_camera_keybored() {}
+pub fn rotate_camera_keybored(
+    keyboard_input: Res<Input<KeyCode>>,
+    q: Query<&RtsKeyboard>,
+    mut event: EventWriter<CameraMotionEvent>,
+) {
+    
+}
 
 type KeyBinding = Box<[KeyCode]>;
 fn pressed(binding: &KeyBinding, input: &Res<Input<KeyCode>>) -> Option<u8> {
