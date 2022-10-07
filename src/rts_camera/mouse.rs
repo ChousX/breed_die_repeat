@@ -68,6 +68,7 @@ pub fn zoom_camera(
         }
 
         if scroll != 0.0 {
+            if opt.invert_zoom { scroll = scroll.neg();}
             output.send(CameraMotionEvent::Zoom(scroll))
         }
     }
@@ -79,6 +80,7 @@ pub struct RtsMouse {
     pub drag: MouseButton,
 
     pub invert_drag: bool,
+    pub invert_zoom: bool,
 
     pub rotate_sensitivity: f32,
     pub drag_sensitivity: f32,
@@ -92,8 +94,9 @@ impl Default for RtsMouse {
             rotate_sensitivity: std::f32::consts::PI / 10.,
             drag: MouseButton::Right,
             drag_sensitivity: 5.,
-            zoom_sensitivity: 5.,
+            zoom_sensitivity: std::f32::consts::PI / 10.,
             invert_drag: true,
+            invert_zoom: true,
         }
     }
 }
