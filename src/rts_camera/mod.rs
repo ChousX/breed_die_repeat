@@ -73,13 +73,14 @@ fn camera_motion(
                 transform.translation += *velocity * time.delta_seconds();
                 //I would like to add a percistent velocity with a claped to a max value and decay over time
             }
+            //not realy happy how this feels
             CameraMotionEvent::Rotate(angle) => transform.rotate_y(*angle * time.delta_seconds()),
             CameraMotionEvent::Zoom(zoom) => {
-                let mut angle = transform.translation.clone().normalize().neg();
-                if angle.y <= 0.0 {
-                    angle.y = 0.1
-                }
-                transform.translation += angle * *zoom;
+                // let mut angle = transform.translation.clone().normalize().neg();
+                // if angle.y <= 0.0 {
+                //     angle.y = 0.1
+                // }
+                transform.translation +=  *zoom;
             }
         }
     }

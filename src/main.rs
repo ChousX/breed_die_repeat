@@ -25,5 +25,5 @@ fn init(
         .add_plain_size(100.0)
         .camera_state(false)
         .build(&mut commands, &mut meshes, &mut materials);
-    rts_camera::build_camera(&mut commands, Transform::from_xyz(-2.0, 2.5, 5.0))
+    rts_camera::build_camera(&mut commands, Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)))
 }
