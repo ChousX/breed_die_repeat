@@ -19,6 +19,7 @@ pub struct mResorce {
     pub amount: f32,
     pub resorce_type: ResorceType,
 }
+
 #[derive(Clone, Copy, Inspectable)]
 pub enum ResorceType {
     Plant,
