@@ -93,10 +93,10 @@ impl Default for RtsMouse {
     fn default() -> Self {
         Self {
             rotate: MouseButton::Middle,
-            rotate_sensitivity: std::f32::consts::PI / 10.,
+            rotate_sensitivity: 5.0,
             drag: MouseButton::Right,
-            drag_sensitivity: 5.,
-            zoom_sensitivity: std::f32::consts::PI / 10.,
+            drag_sensitivity: 5.0,
+            zoom_sensitivity: 5.0,
             invert_drag: true,
             invert_zoom: true,
         }

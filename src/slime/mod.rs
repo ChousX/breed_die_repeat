@@ -87,7 +87,7 @@ fn death(
         if mass.zero_or_less() {
             commands.entity(entity).despawn_recursive();
             event.send(ResorceSpawnEvent {
-                quontity: 10.0,
+                amount: 10.0,
                 resorce_type: ResorceType::Slime,
                 position: (transform.translation.x, transform.translation.z),
             })

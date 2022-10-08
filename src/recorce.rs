@@ -8,7 +8,6 @@ impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
             .add_system(resorce_spawner)
-            // .add_system(shrink)
             .add_system(decay);
     }
 }
@@ -40,7 +39,7 @@ impl Default for ResorceType {
     }
 }
 pub struct ResorceSpawnEvent {
-    pub quontity: f32,
+    pub amount: f32,
     pub resorce_type: ResorceType,
     pub position: (f32, f32),
 }
@@ -48,7 +47,7 @@ pub struct ResorceSpawnEvent {
 impl Default for ResorceSpawnEvent{
     fn default() -> Self {
         Self{
-            quontity: 10.0,
+            amount: 10.0,
             resorce_type: ResorceType::Slime,
             position: (0., 0.)
         }
@@ -66,7 +65,7 @@ fn resorce_spawner(
     for event in events.iter() {
         //color should be resorce type dependent
         //position shoudle evenchualy be random aroun a small area
-        let size = event.quontity * 0.05;
+        let size = event.amount * 0.05;
         let translation = Vec3::new(event.position.0, size , event.position.1);
         commands
             .spawn_bundle(PbrBundle {
@@ -76,14 +75,12 @@ fn resorce_spawner(
                 ..default()
             })
             .insert(mResorce {
-                timer: Timer::from_seconds(RESORCE_LIFE_TIME_RATE * event.quontity, false),
-                amount: event.quontity,
+                timer: Timer::from_seconds(RESORCE_LIFE_TIME_RATE * event.amount, false),
+                amount: event.amount,
                 resorce_type: event.resorce_type,
             });
     }
 }
-
-
 
 fn decay(
     mut commands: Commands,
@@ -93,10 +90,15 @@ fn decay(
 
     for (mut resorce, mut transform, entity) in query.iter_mut() {
         resorce.timer.tick(time.delta());
+        
+        let quont = time.delta_seconds() * 0.001;
+        resorce.amount -= quont;
+        if transform.scale.x >= -0.99{
+            transform.scale -= Vec3::splat(quont);
+        }
+
         if resorce.timer.finished() {
             commands.entity(entity).despawn_recursive()
         }
     }
 }
-
-
