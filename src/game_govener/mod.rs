@@ -44,8 +44,8 @@ fn spawn_random_recorse(
             amount: rng.gen_range((1.0)..(20.0)),
             resorce_type: crate::recorce::ResorceType::Plant,
             position: (
-                rng.gen_range((-10.0)..(10.0)),
-                rng.gen_range((-10.0)..(10.0)),
+                rng.gen_range((-50.0)..(50.0)),
+                rng.gen_range((-50.0)..(50.0)),
                 )
 
         })
