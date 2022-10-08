@@ -53,6 +53,6 @@ fn spawn_random_recorse(
 }
 impl Default for ResorceSpawnTimer{
     fn default() -> Self {
-        Self(Timer::from_seconds(1.0, true))
+ Self(Timer::from_seconds(1.0, true))
     }
 }
