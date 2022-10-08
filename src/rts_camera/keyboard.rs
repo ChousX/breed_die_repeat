@@ -88,8 +88,8 @@ impl Default for RtsKeyboard {
             rotait_left: Box::new([KeyCode::Q]),
             rotait_right: Box::new([KeyCode::E]),
 
-            move_sensitivity: 10.0,
-            rotate_sensitivity: 10.,
+            move_sensitivity: 5.0,
+            rotate_sensitivity: 5.0,
         }
     }
 }

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
+use bevy_rapier3d::rapier::crossbeam::epoch::Collector;
 use std::{hash::Hasher, time::Duration};
 
 pub struct mResorcePlugin;
@@ -23,6 +24,14 @@ pub struct mResorce {
 pub enum ResorceType {
     Plant,
     Slime,
+}
+impl ResorceType{
+    pub fn color(&self) ->Color{
+        match *self{
+            Self::Plant => Color::rgb(0.2, 0.6, 0.3),
+            Self::Slime => Color::rgb(0.6, 0.2, 0.8)
+        }
+    }
 }
 
 impl Default for ResorceType {
@@ -57,13 +66,13 @@ fn resorce_spawner(
     for event in events.iter() {
         //color should be resorce type dependent
         //position shoudle evenchualy be random aroun a small area
-        let size = event.quontity * 0.5;
-        let translation = Vec3::new(event.position.0, size * 0.5, event.position.1);
+        let size = event.quontity * 0.05;
+        let translation = Vec3::new(event.position.0, size , event.position.1);
         commands
             .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: size * 0.1})),
-                material: materials.add(Color::rgb(0.2, 0.5, 0.0).into()),
-                transform: Transform::from_translation(translation).with_scale(Vec3::splat(1.0)),
+                mesh: meshes.add(Mesh::from(shape::Cube { size: size })),
+                material: materials.add(event.resorce_type.color().into()),
+                transform: Transform::from_translation(translation),
                 ..default()
             })
             .insert(mResorce {
