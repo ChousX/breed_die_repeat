@@ -76,9 +76,9 @@ fn camera_motion(
         
             CameraMotionEvent::Rotate(angle) => transform.rotate_y(*angle * time.delta_seconds()),
             CameraMotionEvent::Zoom(zoom) => {
-
-                transform.translation.y +=  *zoom;
-                transform.translation.z +=  *zoom;
+                let zoom = *zoom * time.delta_seconds();
+                transform.translation.y +=  zoom;
+                transform.translation.z +=  zoom;
             }
         }
     }

@@ -5,27 +5,29 @@ pub fn move_camera_keybored(
     q: Query<&RtsKeyboard>,
     mut event: EventWriter<CameraMotionEvent>,
 ) {
-    let mut velocity = Vec3::ZERO;
     for options in q.iter() {
-        let (x, _) = options.move_sensitivity;
+        let mut velocity = Vec3::ZERO;
+
+        let sensitivity= options.move_sensitivity;
         if let Some(count) = pressed(&options.forward, &keyboard_input) {
-            velocity.z -= count as f32 * x;
+            velocity.z -= count as f32 * sensitivity;
         }
         if let Some(count) = pressed(&options.backward, &keyboard_input) {
-            velocity.z += count as f32 * x;
+            velocity.z += count as f32 * sensitivity;
         }
 
         if let Some(count) = pressed(&options.left, &keyboard_input) {
-            velocity.x -= count as f32 * x;
+            velocity.x -= count as f32 * sensitivity;
         }
         if let Some(count) = pressed(&options.right, &keyboard_input) {
-            velocity.x += count as f32 * x;
+            velocity.x += count as f32 * sensitivity;
+        }
+        if velocity != Vec3::ZERO {
+            event.send(CameraMotionEvent::Move(velocity));
         }
     }
 
-    if velocity != Vec3::ZERO {
-        event.send(CameraMotionEvent::Move(velocity));
-    }
+
 }
 
 pub fn rotate_camera_keybored(
@@ -33,6 +35,19 @@ pub fn rotate_camera_keybored(
     q: Query<&RtsKeyboard>,
     mut event: EventWriter<CameraMotionEvent>,
 ) {
+    for options in q.iter(){
+        let mut rotation = 0.0;
+        let sensitivity= options.rotate_sensitivity;
+        if let Some(count) = pressed(&options.rotait_left, &keyboard_input) {
+            rotation -= count as f32 * sensitivity;
+        }
+        if let Some(count) = pressed(&options.rotait_right, &keyboard_input) {
+            rotation += count as f32 * sensitivity;
+        }
+        if rotation != 0.0{
+            event.send(CameraMotionEvent::Rotate(rotation))
+        }
+    }
 }
 
 type KeyBinding = Box<[KeyCode]>;
@@ -60,7 +75,7 @@ pub struct RtsKeyboard {
     pub rotait_left: KeyBinding,
     pub rotait_right: KeyBinding,
 
-    pub move_sensitivity: (f32, f32),
+    pub move_sensitivity: f32,
     pub rotate_sensitivity: f32,
 }
 
@@ -75,7 +90,7 @@ impl Default for RtsKeyboard {
             rotait_left: Box::new([KeyCode::Q]),
             rotait_right: Box::new([KeyCode::E]),
 
-            move_sensitivity: (10.0, 0.1),
+            move_sensitivity: 10.0,
             rotate_sensitivity: std::f32::consts::PI / 100.,
         }
     }

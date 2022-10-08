@@ -94,7 +94,7 @@ impl Default for RtsMouse {
             rotate_sensitivity: std::f32::consts::PI / 10.,
             drag: MouseButton::Right,
             drag_sensitivity: 5.,
-            zoom_sensitivity: std::f32::consts::PI / 10.,
+            zoom_sensitivity: 5.,
             invert_drag: true,
             invert_zoom: true,
         }
