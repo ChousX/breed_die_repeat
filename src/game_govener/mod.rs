@@ -11,24 +11,6 @@ impl Plugin for GameGovenerPlugin{
     }
 }
 
-fn test(
-    mut output: EventWriter<ResorceSpawnEvent>,
-){
-    output.send(ResorceSpawnEvent{
-        position: (1., 1.),
-        ..default()
-    });
-    output.send(ResorceSpawnEvent{
-        position: (2., 1.),
-        ..default()
-    });
-    output.send(ResorceSpawnEvent{
-        position: (0., 1.),
-        amount: 1.,
-        ..default()
-    });
-}
-
 #[derive(DerefMut, Deref)]
 struct ResorceSpawnTimer(Timer);
 fn spawn_random_recorse(
@@ -56,3 +38,4 @@ impl Default for ResorceSpawnTimer{
         Self(Timer::from_seconds(1.0, true))
     }
 }
+

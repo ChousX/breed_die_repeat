@@ -12,6 +12,7 @@ impl Plugin for SlimePlugin {
         //event slime move reader
         //digestion
     }
+
     fn name(&self) -> &str {
         "SlimePlugin"
     }
@@ -87,7 +88,7 @@ fn death(
         if mass.zero_or_less() {
             commands.entity(entity).despawn_recursive();
             event.send(ResorceSpawnEvent {
-                amount: 10.0,
+                amount: mass.min,
                 resorce_type: ResorceType::Slime,
                 position: (transform.translation.x, transform.translation.z),
             })
