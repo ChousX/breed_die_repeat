@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
-use std::{hash::Hasher, time::Duration};
+use bevy_rapier3d::prelude::*;
 
 pub struct mResorcePlugin;
 impl Plugin for mResorcePlugin {
