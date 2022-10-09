@@ -6,7 +6,9 @@ pub struct mResorcePlugin;
 impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
+            .add_event::<ResorceDespawnEvent>()
             .add_system(resorce_spawner)
+            .add_system(resorce_despawner)
             .add_system(decay);
     }
 }
@@ -17,19 +19,10 @@ pub struct mResorce {
     pub amount: f32,
     pub resorce_type: ResorceType,
 }
-
 #[derive(Clone, Copy, Inspectable)]
 pub enum ResorceType {
     Plant,
     Slime,
-}
-impl ResorceType{
-    pub fn color(&self) ->Color{
-        match *self{
-            Self::Plant => Color::rgb(0.2, 0.6, 0.3),
-            Self::Slime => Color::rgb(0.6, 0.2, 0.8)
-        }
-    }
 }
 
 impl Default for ResorceType {
@@ -38,19 +31,9 @@ impl Default for ResorceType {
     }
 }
 pub struct ResorceSpawnEvent {
-    pub amount: f32,
+    pub quontity: f32,
     pub resorce_type: ResorceType,
-    pub position: (f32, f32),
-}
-
-impl Default for ResorceSpawnEvent{
-    fn default() -> Self {
-        Self{
-            amount: 10.0,
-            resorce_type: ResorceType::Slime,
-            position: (0., 0.)
-        }
-    }
+    pub position: Vec3,
 }
 
 const RESORCE_LIFE_TIME_RATE: f32 = 10.0;
@@ -64,40 +47,40 @@ fn resorce_spawner(
     for event in events.iter() {
         //color should be resorce type dependent
         //position shoudle evenchualy be random aroun a small area
-        let size = event.amount * 0.05;
-        let translation = Vec3::new(event.position.0, size , event.position.1);
+
         commands
             .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: size })),
-                material: materials.add(event.resorce_type.color().into()),
-                transform: Transform::from_translation(translation),
+                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.01 })),
+                material: materials.add(Color::rgb(0.0, 0.2, 0.6).into()),
+                transform: Transform::from_translation(event.position),
                 ..default()
             })
             .insert(mResorce {
-                timer: Timer::from_seconds(RESORCE_LIFE_TIME_RATE * event.amount, false),
-                amount: event.amount,
+                timer: Timer::from_seconds(RESORCE_LIFE_TIME_RATE * event.quontity, false),
+                amount: event.quontity,
                 resorce_type: event.resorce_type,
             });
     }
 }
 
+#[derive(Deref)]
+struct ResorceDespawnEvent(Entity);
+
+fn resorce_despawner(mut commands: Commands, mut events: EventReader<ResorceDespawnEvent>) {
+    for entity in events.iter() {
+        commands.entity(**entity).despawn_recursive();
+    }
+}
+
 fn decay(
-    mut commands: Commands,
-    mut query: Query<(&mut mResorce, &mut Transform, Entity)>,
+    mut query: Query<(&mut mResorce, Entity)>,
     time: Res<Time>,
+    mut events: EventWriter<ResorceDespawnEvent>,
 ) {
-
-    for (mut resorce, mut transform, entity) in query.iter_mut() {
+    for (mut resorce, entitiy) in query.iter_mut() {
         resorce.timer.tick(time.delta());
-        
-        let quont = time.delta_seconds() * 0.001;
-        resorce.amount -= quont;
-        if transform.scale.x >= -0.99{
-            transform.scale -= Vec3::splat(quont);
-        }
-
         if resorce.timer.finished() {
-            commands.entity(entity).despawn_recursive()
+            events.send(ResorceDespawnEvent(entitiy));
         }
     }
 }

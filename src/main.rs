@@ -6,7 +6,6 @@ mod recorce;
 mod rts_camera;
 mod seenbuild;
 mod slime;
-mod game_govener;
 
 fn main() {
     App::new()
@@ -16,7 +15,6 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(recorce::mResorcePlugin)
         .add_plugin(rts_camera::RtsCameraPlugin)
-        .add_plugin(game_govener::GameGovenerPlugin)
         .add_startup_system(init)
         .run();
 }
@@ -30,8 +28,5 @@ fn init(
         .add_plain_size(100.0)
         .camera_state(false)
         .build(&mut commands, &mut meshes, &mut materials);
-    rts_camera::build_camera(
-        &mut commands,
-        Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)),
-    )
+    rts_camera::build_camera(&mut commands, Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)))
 }

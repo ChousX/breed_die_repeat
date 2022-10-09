@@ -68,9 +68,7 @@ pub fn zoom_camera(
         }
 
         if scroll != 0.0 {
-            if opt.invert_zoom {
-                scroll = scroll.neg();
-            }
+            if opt.invert_zoom { scroll = scroll.neg();}
             output.send(CameraMotionEvent::Zoom(scroll))
         }
     }
@@ -93,10 +91,10 @@ impl Default for RtsMouse {
     fn default() -> Self {
         Self {
             rotate: MouseButton::Middle,
-            rotate_sensitivity: 5.0,
+            rotate_sensitivity: std::f32::consts::PI / 10.,
             drag: MouseButton::Right,
-            drag_sensitivity: 5.0,
-            zoom_sensitivity: 5.0,
+            drag_sensitivity: 5.,
+            zoom_sensitivity: 5.,
             invert_drag: true,
             invert_zoom: true,
         }

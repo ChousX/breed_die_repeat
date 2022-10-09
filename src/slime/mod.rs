@@ -33,9 +33,9 @@ pub struct Slime;
 /// Mass max >= min * 2 else it will not be able to bud
 #[derive(Component, Default, Inspectable)]
 pub struct Mass {
-    current: f32,
-    max: f32,
-    min: f32,
+    pub current: f32,
+    pub max: f32,
+    pub min: f32,
 }
 
 impl Mass {
@@ -90,7 +90,7 @@ fn death(
             event.send(ResorceSpawnEvent {
                 amount: mass.min,
                 resorce_type: ResorceType::Slime,
-                position: (transform.translation.x, transform.translation.z),
+                position: transform.translation,
             })
         }
     }

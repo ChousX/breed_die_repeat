@@ -14,4 +14,3 @@ opt-level = 3
 bevy = "0.8.1"
 bevy_rapier3d = {version = "0.17.0", features= ["debug-render", "parallel", "enhanced-determinism"]}
 bevy-inspector-egui = "0.13.0"
-rand = "0.8.5"
