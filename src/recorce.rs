@@ -30,8 +30,16 @@ impl Default for ResorceType {
         Self::Slime
     }
 }
+impl ResorceType{
+    pub fn color(&self) -> Color{
+        match *self{
+            ResorceType::Plant => Color::rgb(0.2, 0.6, 0.2),
+            ResorceType::Slime => Color::rgb(0.3, 0.1, 0.6),
+        }
+    }
+}
 pub struct ResorceSpawnEvent {
-    pub quontity: f32,
+    pub amount: f32,
     pub resorce_type: ResorceType,
     pub position: Vec3,
 }
@@ -51,13 +59,13 @@ fn resorce_spawner(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 0.01 })),
-                material: materials.add(Color::rgb(0.0, 0.2, 0.6).into()),
+                material: materials.add(event.resorce_type.color().into()),
                 transform: Transform::from_translation(event.position),
                 ..default()
             })
             .insert(mResorce {
-                timer: Timer::from_seconds(RESORCE_LIFE_TIME_RATE * event.quontity, false),
-                amount: event.quontity,
+                timer: Timer::from_seconds(RESORCE_LIFE_TIME_RATE * event.amount, false),
+                amount: event.amount,
                 resorce_type: event.resorce_type,
             });
     }
