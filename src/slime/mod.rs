@@ -18,13 +18,13 @@ impl Plugin for SlimePlugin {
     }
 }
 
-#[derive(Bundle)]
+#[derive(Bundle, Default)]
 pub struct SlimeBundle {
-    mass: Mass,
-    metabolism: Metabolism,
-    enderance: Enderance,
-    speed: Speed,
-    slime: Slime,
+    pub mass: Mass,
+    pub metabolism: Metabolism,
+    pub enderance: Enderance,
+    pub speed: Speed,
+    pub slime: Slime,
 }
 
 #[derive(Component, Default, Inspectable)]
@@ -68,13 +68,12 @@ impl Mass {
 pub struct Metabolism(f32);
 
 fn metabolism(
-    mut commands: Commands,
-    mut query: Query<(&Metabolism, &mut Mass, Entity)>,
+    mut query: Query<(&Metabolism, &mut Mass)>,
     time: Res<Time>,
 ) {
-    for (metabolism, mut mass, entity) in query.iter_mut() {
+    for (metabolism, mut mass) in query.iter_mut() {
         if mass.loss(metabolism.0 * time.delta_seconds()) {
-            commands.entity(entity).insert(Starving);
+            
         }
     }
 }
@@ -90,7 +89,7 @@ fn death(
             event.send(ResorceSpawnEvent {
                 amount: mass.min,
                 resorce_type: ResorceType::Slime,
-                position: transform.translation,
+                position: (transform.translation.x, transform.translation.z),
             })
         }
     }
@@ -101,6 +100,3 @@ pub struct Enderance(f32);
 
 #[derive(Component, Default, Inspectable)]
 pub struct Speed(f32);
-
-#[derive(Component)]
-pub struct Starving;

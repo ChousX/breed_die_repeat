@@ -1,15 +1,14 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
-use bevy_rapier3d::prelude::*;
+use bevy_rapier3d::{prelude::*, parry::transformation};
 
 pub struct mResorcePlugin;
 impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
-            .add_event::<ResorceDespawnEvent>()
             .add_system(resorce_spawner)
-            .add_system(resorce_despawner)
-            .add_system(decay);
+            .add_system(decay)
+            ;
     }
 }
 
@@ -41,7 +40,7 @@ impl ResorceType{
 pub struct ResorceSpawnEvent {
     pub amount: f32,
     pub resorce_type: ResorceType,
-    pub position: Vec3,
+    pub position: (f32, f32),
 }
 
 const RESORCE_LIFE_TIME_RATE: f32 = 10.0;
@@ -53,14 +52,14 @@ fn resorce_spawner(
     mut events: EventReader<ResorceSpawnEvent>,
 ) {
     for event in events.iter() {
-        //color should be resorce type dependent
         //position shoudle evenchualy be random aroun a small area
-
+        let amount = event.amount;
+        let height = amount/2.0;
         commands
             .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Cube { size: 0.01 })),
+                mesh: meshes.add(Mesh::from(shape::Cube { size: amount })),
                 material: materials.add(event.resorce_type.color().into()),
-                transform: Transform::from_translation(event.position),
+                transform: Transform::from_xyz(event.position.0, height, event.position.1),
                 ..default()
             })
             .insert(mResorce {
@@ -71,24 +70,21 @@ fn resorce_spawner(
     }
 }
 
-#[derive(Deref)]
-struct ResorceDespawnEvent(Entity);
-
-fn resorce_despawner(mut commands: Commands, mut events: EventReader<ResorceDespawnEvent>) {
-    for entity in events.iter() {
-        commands.entity(**entity).despawn_recursive();
-    }
-}
 
 fn decay(
-    mut query: Query<(&mut mResorce, Entity)>,
+    mut commands: Commands,
+    mut query: Query<(&mut mResorce, &mut Transform, Entity)>,
     time: Res<Time>,
-    mut events: EventWriter<ResorceDespawnEvent>,
+    
 ) {
-    for (mut resorce, entitiy) in query.iter_mut() {
+    for (mut resorce, mut transform, entity) in query.iter_mut() {
         resorce.timer.tick(time.delta());
         if resorce.timer.finished() {
-            events.send(ResorceDespawnEvent(entitiy));
+            commands.entity(entity).despawn_recursive();
+        } else {
+            transform.scale -= time.delta_seconds() * 0.005;
+            resorce.amount -= time.delta_seconds() * 0.005;
         }
     }
 }
+
