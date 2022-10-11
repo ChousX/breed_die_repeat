@@ -5,9 +5,13 @@ use bevy_inspector_egui::Inspectable;
 pub struct SlimePlugin;
 impl Plugin for SlimePlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(metabolism)
+        app
+            .add_event::<SlimeMoveEvent>()
+            .add_system(metabolism)
             .add_system(death)
-            .add_system(metabolism);
+            .add_system(metabolism)
+            .add_system(slime_move)
+            ;
         //thinky thingy
         //event slime move reader
         //digestion
@@ -100,3 +104,28 @@ pub struct Enderance(f32);
 
 #[derive(Component, Default, Inspectable)]
 pub struct Speed(f32);
+
+pub struct SlimeMoveEvent(Entity, Vec3);
+
+pub enum MovePlan{
+    Avoid(Entity),
+    Ingaje(Entity),
+    MoveToSpawt(f32, f32),
+    MovetoEntity(Entity) 
+}
+
+pub struct ThinkingBits{
+    move_plan: Vec<MovePlan>
+
+}
+
+fn slime_move(
+    mut query: Query<&mut Transform, With<Slime>>,
+    mut event: EventReader<SlimeMoveEvent>
+){
+    for SlimeMoveEvent(entity, amount) in event.iter(){
+        if let Ok(mut transform) =query.get_component_mut::<Transform>(*entity){
+            transform.translation += *amount;
+        }
+    }
+}
