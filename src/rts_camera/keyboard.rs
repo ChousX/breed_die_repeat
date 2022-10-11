@@ -8,7 +8,7 @@ pub fn move_camera_keybored(
     for options in q.iter() {
         let mut velocity = Vec3::ZERO;
 
-        let sensitivity= options.move_sensitivity;
+        let sensitivity = options.move_sensitivity;
         if let Some(count) = pressed(&options.forward, &keyboard_input) {
             velocity.z -= count as f32 * sensitivity;
         }
@@ -26,8 +26,6 @@ pub fn move_camera_keybored(
             event.send(CameraMotionEvent::Move(velocity));
         }
     }
-
-
 }
 
 pub fn rotate_camera_keybored(
@@ -35,16 +33,16 @@ pub fn rotate_camera_keybored(
     q: Query<&RtsKeyboard>,
     mut event: EventWriter<CameraMotionEvent>,
 ) {
-    for options in q.iter(){
+    for options in q.iter() {
         let mut rotation = 0.0;
-        let sensitivity= options.rotate_sensitivity;
+        let sensitivity = options.rotate_sensitivity;
         if let Some(count) = pressed(&options.rotait_left, &keyboard_input) {
             rotation -= count as f32 * sensitivity;
         }
         if let Some(count) = pressed(&options.rotait_right, &keyboard_input) {
             rotation += count as f32 * sensitivity;
         }
-        if rotation != 0.0{
+        if rotation != 0.0 {
             event.send(CameraMotionEvent::Rotate(rotation))
         }
     }

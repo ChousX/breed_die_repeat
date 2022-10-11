@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-
 /// for prototyping
 /// Requires: DefaultPlugins
 /// will spawn a plain a light and a camera

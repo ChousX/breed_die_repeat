@@ -68,7 +68,9 @@ pub fn zoom_camera(
         }
 
         if scroll != 0.0 {
-            if opt.invert_zoom { scroll = scroll.neg();}
+            if opt.invert_zoom {
+                scroll = scroll.neg();
+            }
             output.send(CameraMotionEvent::Zoom(scroll))
         }
     }

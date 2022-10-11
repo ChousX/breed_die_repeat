@@ -1,12 +1,12 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
+use bevy_rapier3d::prelude::*;
 
+mod game_govener;
 mod recorce;
 mod rts_camera;
 mod seenbuild;
 mod slime;
-mod game_govener;
 
 fn main() {
     App::new()
@@ -30,5 +30,8 @@ fn init(
         .add_plain_size(100.0)
         .camera_state(false)
         .build(&mut commands, &mut meshes, &mut materials);
-    rts_camera::build_camera(&mut commands, Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)))
+    rts_camera::build_camera(
+        &mut commands,
+        Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)),
+    )
 }
