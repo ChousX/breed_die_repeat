@@ -1,5 +1,5 @@
 use crate::recorce::ResorceSpawnEvent;
-use crate::slime::*;
+use crate::mob::*;
 use bevy::prelude::*;
 use rand::prelude::*;
 

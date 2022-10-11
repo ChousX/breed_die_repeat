@@ -42,14 +42,7 @@ pub struct SlimeBundle {
 pub struct Mob;
 
 
-#[derive(Component, Default, Deref, Inspectable)]
-pub struct Metabolism(f32);
 
-fn metabolism(mut query: Query<(&Metabolism, &mut Mass)>, time: Res<Time>) {
-    for (metabolism, mut mass) in query.iter_mut() {
-        if mass.loss(metabolism.0 * time.delta_seconds()) {}
-    }
-}
 
 fn death(
     mut commands: Commands,

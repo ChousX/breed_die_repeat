@@ -40,3 +40,12 @@ impl Mass {
         (self.current / self.min).floor() as u32
     }
 }
+
+#[derive(Component, Default, Deref, Inspectable)]
+pub struct Metabolism(f32);
+
+pub fn metabolism(mut query: Query<(&Metabolism, &mut Mass)>, time: Res<Time>) {
+    for (metabolism, mut mass) in query.iter_mut() {
+        if mass.loss(metabolism.0 * time.delta_seconds()) {}
+    }
+}

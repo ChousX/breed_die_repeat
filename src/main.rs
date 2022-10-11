@@ -6,7 +6,7 @@ mod game_govener;
 mod recorce;
 mod rts_camera;
 mod seenbuild;
-mod slime;
+mod mob;
 
 fn main() {
     App::new()
