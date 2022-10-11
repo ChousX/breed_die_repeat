@@ -6,17 +6,17 @@ use components::*;
 mod perseption;
 use perseption::*;
 
-pub struct SlimePlugin;
-impl Plugin for SlimePlugin {
+pub struct MobPlugin;
+impl Plugin for MobPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SlimeMoveEvent>()
+        app.add_event::<MobMoveEvent>()
             .add_event::<PerseptionEvent>()
             .add_system(metabolism)
             .add_system(death)
             .add_system(metabolism)
             .add_system(sight)
             .add_system(perseption_event_handler)
-            .add_system(slime_move);
+            .add_system(mob_move);
         //thinky thingy
         //event slime move reader
         //digestion
@@ -33,13 +33,13 @@ pub struct SlimeBundle {
     pub metabolism: Metabolism,
     pub enderance: Enderance,
     pub speed: Speed,
-    pub slime: Slime,
+    pub mob: Mob,
     pub thinking_bits: ThinkingBits,
     pub vition: Vition,
 }
 
 #[derive(Component, Default, Inspectable)]
-pub struct Slime;
+pub struct Mob;
 
 
 #[derive(Component, Default, Deref, Inspectable)]
@@ -68,7 +68,7 @@ fn death(
     }
 }
 
-pub struct SlimeMoveEvent(Entity, Vec3);
+pub struct MobMoveEvent(Entity, Vec3);
 
 pub enum MovePlan {
     Avoid(Entity),
@@ -82,11 +82,11 @@ pub struct ThinkingBits {
     move_plan: Vec<MovePlan>,
 }
 
-fn slime_move(
-    mut query: Query<(&mut Transform), With<Slime>>,
-    mut event: EventReader<SlimeMoveEvent>,
+fn mob_move(
+    mut query: Query<(&mut Transform), With<Mob>>,
+    mut event: EventReader<MobMoveEvent>,
 ) {
-    for SlimeMoveEvent(entity, amount) in event.iter() {
+    for MobMoveEvent(entity, amount) in event.iter() {
         if let Ok(mut transform) = query.get_component_mut::<Transform>(*entity) {
             transform.translation += *amount;
         }

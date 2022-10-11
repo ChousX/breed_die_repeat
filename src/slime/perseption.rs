@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use super::{SlimeMoveEvent, Speed, mResorce};
+use super::{MobMoveEvent, Speed, mResorce};
 pub enum TagType {
     Food,
     Danger,
@@ -50,7 +50,7 @@ pub enum PerseptionEvent {
 
 pub fn perseption_event_handler(
     mut events: EventReader<PerseptionEvent>,
-    mut output: EventWriter<SlimeMoveEvent>,
+    mut output: EventWriter<MobMoveEvent>,
     mut transform: Query<&Transform>,
     mut speed: Query<&Speed>,
 ) {
@@ -67,7 +67,7 @@ pub fn perseption_event_handler(
                             } else {
                                 0.0f32
                             };
-                            output.send(SlimeMoveEvent(*entity, norm * speed));
+                            output.send(MobMoveEvent(*entity, norm * speed));
                             break;
                         }
                     }
