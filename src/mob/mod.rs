@@ -10,6 +10,7 @@ use perseption::*;
 
 mod cognision;
 use cognision::*;
+pub use perseption::DontView;
 
 #[derive(Component, Default)]
 pub struct Mob;
@@ -20,6 +21,7 @@ impl Plugin for MobPlugin {
         app.add_event::<PerseptionEvent>()
             .add_event::<MobMoveEvent>()
             .add_system(perseption_reader)
+            .add_system(viewing)
             .add_system(mob_move);
     }
 }
@@ -28,4 +30,5 @@ impl Plugin for MobPlugin {
 pub struct MobBundle {
     pub mob: Mob,
     pub speed: Speed,
+    pub vition: Vision,
 }

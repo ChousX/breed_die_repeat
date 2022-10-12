@@ -16,6 +16,7 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(recorce::mResorcePlugin)
         .add_plugin(rts_camera::RtsCameraPlugin)
+        .add_plugin(mob::MobPlugin)
         .add_plugin(game_govener::GameGovenerPlugin)
         .add_startup_system(init)
         .run();
