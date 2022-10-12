@@ -29,6 +29,7 @@ impl Speed {
 
     pub fn add(&mut self, direction: Vec3) {
         self.momentum += direction * self.speed;
+        self.momentum.y = 0.0;
         //x
         if self.momentum.x.abs() > self.max {
             self.momentum.x = self.max
@@ -36,11 +37,11 @@ impl Speed {
             self.momentum.x = -self.max
         }
         //y
-        if self.momentum.y.abs() > self.max {
-            self.momentum.y = self.max
-        } else if self.momentum.y.abs() > self.max {
-            self.momentum.y = -self.max
-        }
+        // if self.momentum.y.abs() > self.max {
+        //     self.momentum.y = self.max
+        // } else if self.momentum.y.abs() > self.max {
+        //     self.momentum.y = -self.max
+        // }
         //z
         if self.momentum.z > self.max {
             self.momentum.z = self.max
@@ -93,7 +94,7 @@ pub fn mob_move(
         if let Ok((mut transform, mut speed)) = entities.get_mut(event.id) {
             speed.add(event.direction * time.delta_seconds());
             transform.translation += speed.get() * time.delta_seconds();
-            speed.friction(1.0 * time.delta_seconds());
+            speed.friction(5.0 * time.delta_seconds());
         }
     }
 }
