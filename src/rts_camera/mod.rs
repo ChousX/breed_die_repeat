@@ -5,6 +5,7 @@ mod keyboard;
 mod mouse;
 use keyboard::{move_camera_keybored, rotate_camera_keybored, RtsKeyboard};
 use mouse::{move_camera_mouse, rotate_camera_mouse, zoom_camera, RtsMouse};
+use crate::mob::DontView;
 
 pub fn build_camera(commands: &mut Commands, transform: Transform) {
     commands
@@ -12,7 +13,7 @@ pub fn build_camera(commands: &mut Commands, transform: Transform) {
         .insert_bundle(Camera3dBundle {
             transform,
             ..default()
-        });
+        }).insert(DontView);
 }
 
 #[derive(Bundle, Default)]
@@ -73,12 +74,12 @@ fn camera_motion(
                 transform.translation += *velocity * time.delta_seconds();
                 //I would like to add a percistent velocity with a claped to a max value and decay over time
             }
-        
+
             CameraMotionEvent::Rotate(angle) => transform.rotate_y(*angle * time.delta_seconds()),
             CameraMotionEvent::Zoom(zoom) => {
                 let zoom = *zoom * time.delta_seconds();
-                transform.translation.y +=  zoom;
-                transform.translation.z +=  zoom;
+                transform.translation.y += zoom;
+                transform.translation.z += zoom;
             }
         }
     }

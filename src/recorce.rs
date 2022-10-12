@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
-use bevy_rapier3d::{prelude::*, parry::transformation};
+use bevy_rapier3d::{parry::transformation, prelude::*};
 
 pub struct mResorcePlugin;
 impl Plugin for mResorcePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<ResorceSpawnEvent>()
             .add_system(resorce_spawner)
-            .add_system(decay)
-            ;
+            .add_system(decay);
     }
 }
 
@@ -29,9 +28,9 @@ impl Default for ResorceType {
         Self::Slime
     }
 }
-impl ResorceType{
-    pub fn color(&self) -> Color{
-        match *self{
+impl ResorceType {
+    pub fn color(&self) -> Color {
+        match *self {
             ResorceType::Plant => Color::rgb(0.2, 0.6, 0.2),
             ResorceType::Slime => Color::rgb(0.3, 0.1, 0.6),
         }
@@ -54,7 +53,7 @@ fn resorce_spawner(
     for event in events.iter() {
         //position shoudle evenchualy be random aroun a small area
         let amount = event.amount;
-        let height = amount/2.0;
+        let height = amount / 2.0;
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: amount })),
@@ -70,12 +69,10 @@ fn resorce_spawner(
     }
 }
 
-
 fn decay(
     mut commands: Commands,
     mut query: Query<(&mut mResorce, &mut Transform, Entity)>,
     time: Res<Time>,
-    
 ) {
     for (mut resorce, mut transform, entity) in query.iter_mut() {
         resorce.timer.tick(time.delta());
@@ -87,4 +84,3 @@ fn decay(
         }
     }
 }
-

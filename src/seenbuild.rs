@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+use crate::mob::DontView;
 
 /// for prototyping
 /// Requires: DefaultPlugins
@@ -106,7 +107,7 @@ impl SeenBuilder {
             material: materials.add(self.plane_color.unwrap_or(Color::rgb(0.2, 0.2, 0.4)).into()),
             transform: self.get_plain_transform(),
             ..default()
-        });
+        }).insert(DontView);
 
         //spawning light
         commands.spawn_bundle(PointLightBundle {
@@ -118,14 +119,14 @@ impl SeenBuilder {
 
             transform: self.get_light_pos(),
             ..default()
-        });
+        }).insert(DontView);
 
         //spawing camera
         if self.camera {
             commands.spawn_bundle(Camera3dBundle {
                 transform: self.get_camera_transform(),
                 ..default()
-            });
+            }).insert(DontView);
         }
     }
 }
