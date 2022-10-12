@@ -1,5 +1,5 @@
-use crate::recorce::ResorceSpawnEvent;
 use crate::mob::*;
+use crate::recorce::ResorceSpawnEvent;
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -55,5 +55,5 @@ fn spawn_slimes(
             material: materials.add(Color::BLUE.into()),
             ..default()
         })
-        .insert_bundle(SlimeBundle { ..default() });
+        .insert_bundle(MobBundle { ..default() });
 }

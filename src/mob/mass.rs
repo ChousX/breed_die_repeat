@@ -11,6 +11,7 @@ impl Mass {
     pub fn new(current: f32, max: f32, min: f32) -> Self {
         Self { current, max, min }
     }
+
     //so if it goes below min then its starving
     pub fn loss(&mut self, amount: f32) -> bool {
         self.current -= amount;

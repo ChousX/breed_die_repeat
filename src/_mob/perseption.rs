@@ -78,6 +78,3 @@ pub fn perseption_event_handler(
     }
 }
 
-fn move_towrds(from: Vec3, to: Vec3) -> Vec3 {
-    (to - from).normalize_or_zero()
-}

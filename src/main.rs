@@ -3,10 +3,10 @@ use bevy_inspector_egui::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
 
 mod game_govener;
+mod mob;
 mod recorce;
 mod rts_camera;
 mod seenbuild;
-mod mob;
 
 fn main() {
     App::new()
