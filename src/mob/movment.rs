@@ -58,19 +58,22 @@ impl Speed {
         self.momentum = Vec3::ZERO;
     }
 
-    //todo
+    
     pub fn friction(&mut self, value: f32) {
-        let (x, y, z) = (self.momentum.x, self.momentum.y, self.momentum.z);
+        let (x, _y, z) = (self.momentum.x, self.momentum.y, self.momentum.z);
+        //x
         if x.abs() - value < 0.0 {
             self.momentum.x = 0.0;
         } else {
             self.momentum.x -= value;
         }
-        if y.abs() - value < 0.0 {
-            self.momentum.y = 0.0;
-        } else {
-            self.momentum.y -= value;
-        }
+        // //y
+        // if y.abs() - value < 0.0 {
+        //     self.momentum.y = 0.0;
+        // } else {
+        //     self.momentum.y -= value;
+        // }
+        //z
         if z.abs() - value < 0.0 {
             self.momentum.z = 0.0;
         } else {
@@ -81,7 +84,7 @@ impl Speed {
 
 impl Default for Speed {
     fn default() -> Self {
-        Self::new(10.0, 30.0)
+        Self::new(2.0, 7.0)
     }
 }
 
@@ -94,7 +97,7 @@ pub fn mob_move(
         if let Ok((mut transform, mut speed)) = entities.get_mut(event.id) {
             speed.add(event.direction * time.delta_seconds());
             transform.translation += speed.get() * time.delta_seconds();
-            speed.friction(5.0 * time.delta_seconds());
+            speed.friction(1.25 * time.delta_seconds());
         }
     }
 }
