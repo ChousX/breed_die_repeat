@@ -8,8 +8,6 @@ use mass::*;
 mod perseption;
 use perseption::*;
 
-mod cognision;
-use cognision::*;
 pub use perseption::DontView;
 
 #[derive(Component, Default)]

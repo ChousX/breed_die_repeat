@@ -9,7 +9,7 @@ pub struct Vision {
 
 impl Default for Vision {
     fn default() -> Self {
-        Self { range: 25.0 }
+        Self { range: 30.0 }
     }
 }
 
@@ -39,14 +39,13 @@ pub fn viewing(
                 && y >= mz - r
             {
                 if recorces.contains(id){
-                    seen.push((Vec3::new(x, y, z), Preseved::Food(id)))
+                    seen.push(Preseved::Food(id))
                 }
             } 
         }
         if !seen.is_empty(){
             output.send(PerseptionEvent::TrueSight{
                 id: entity,
-                position: Vec3::new(mx, my, mz),
                 seen
             });
         }

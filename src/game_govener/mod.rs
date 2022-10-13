@@ -24,7 +24,7 @@ fn spawn_random_recorse(
     if timer.just_finished() {
         //span a recorce
         output.send(ResorceSpawnEvent {
-            amount: rng.gen_range((0.01)..(1.0)),
+            amount: rng.gen_range((1.0)..(2.5)),
             resorce_type: crate::recorce::ResorceType::Plant,
             position: (
                 rng.gen_range((-50.0)..(50.0)),
@@ -35,7 +35,7 @@ fn spawn_random_recorse(
 }
 impl Default for ResorceSpawnTimer {
     fn default() -> Self {
-        Self(Timer::from_seconds(1.0, true))
+        Self(Timer::from_seconds(0.5, true))
     }
 }
 
