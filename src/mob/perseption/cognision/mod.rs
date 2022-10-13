@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use super::*;
 
-pub fn perseption_reader(
+pub fn _perseption_reader(
     mut events: EventReader<PerseptionEvent>,
     mut movement: EventWriter<MobMoveEvent>,
     transforms: Query<&Transform, Without<DontView>>

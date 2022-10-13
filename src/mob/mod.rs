@@ -18,7 +18,7 @@ impl Plugin for MobPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<PerseptionEvent>()
             .add_event::<MobMoveEvent>()
-            .add_system(perseption_reader)
+            //.add_system(perseption_reader)
             .add_system(viewing)
             .add_system(mob_move);
     }
