@@ -26,14 +26,14 @@ type Space = [f32; CHUNK_SIZE_TOTALE];
 
 const CHUNK_SIZE: Size = (10, 10, 10);
 const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
-///          Y
-///      ?Z  |
+///         +Y
+///      +Z  |
 ///       \  |
 ///        \ |(0,0,0)
-///-X_______\|/________X
+///-X_______\|/________+X
 ///          \
 ///          |\
-///          | \?Z
+///          | \-Z
 ///         -Y
 const CHUNK_ZERO_ZERO: Pos = [0.0, 0.0, 0.0];
 ///(min, max)
@@ -68,6 +68,7 @@ impl Chunk {
     pub fn cubes(&self) -> Cubes {
         Cubes::from(self)
     }
+    
 }
 
 impl Chunk {
