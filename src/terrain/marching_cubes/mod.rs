@@ -19,7 +19,7 @@ type Vertex = [f32; 3];
 type Size = (usize, usize, usize);
 
 ///(x,y,z)
-type Pos = (f32, f32, f32);
+type Pos = [f32; 3];
 
 type Space = [f32; CHUNK_SIZE_TOTALE];
 
@@ -42,6 +42,8 @@ const SHEAR_POINT: f32 = SHEAR_RANGE.0 + SHEAR_RANGE.1;
 const CUBE_COUNT: Index = (CHUNK_SIZE.0 - 1) * (CHUNK_SIZE.1 - 1) * (CHUNK_SIZE.2 - 1);
 
 type Cube = [f32; 8];
+
+const ISO_DISTANCE: f32 = 1.0;
 
 pub struct Chunk {
     space: Space,
@@ -104,20 +106,79 @@ impl Chunk {
 }
 
 impl Chunk{
-    pub fn march(&self) -> Mesh{
-        let mut positions: Vec<[f32; 3]> = Vec::new();
-        let mut indices: Vec<u32> = Vec::new();
-        let mut normales: Vec<Normal> = Vec::new();
-        let _ = self.cubes().map(|cube| {
-            let cc = cube_case(&cube, SHEAR_POINT);
-            
-        });
+    pub fn march(&self) -> Vec<Vec<[f32; 3]>>{
 
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normales);
-        mesh.set_indices(Some(Indices::U32(indices)));
-        mesh
+        self.cubes().enumerate().map(|(i, cube)| {
+            let mut triangles = Vec::new();
+            let mut edges:[[f32; 3]; 12] = [[0.0f32; 3]; 12];
+            let cc = cube_case(&cube, SHEAR_POINT);
+            let (x, y, z) = to3d(i);
+            const D: f32 = ISO_DISTANCE; 
+            let (x, y, z) = (x as f32 * D, y as f32 * D, z as f32 * D);
+            let p: [[f32; 3]; 8] = [
+                [x, y, z + D], //0
+                [x + D, y, z + D], //1
+                [x + D, y, z], //2
+                [x + D, y, z], //3
+
+                [x, y + D, z + D], //4
+                [x + D, y + D, z + D], //5
+                [x + D, y + D, z], //6
+                [x + D, y + D, z] //7            
+
+            ];
+            if EDGE_TABLE[cc] == 0 {continue;}
+            if EDGE_TABLE[cc] & 1 {
+                edges[0] = vertex_interp(SHEAR_POINT, p[0], p[1], cube[0], cube[1]);
+            }
+            if EDGE_TABLE[cc] & 2 {
+                edges[1] = vertex_interp(SHEAR_POINT, p[1], p[2], cube[1], cube[2]);
+            }
+            if EDGE_TABLE[cc] & 4 {
+                edges[2] = vertex_interp(SHEAR_POINT, p[2], p[3], cube[2], cube[3]);
+            }
+            if EDGE_TABLE[cc] & 8 {
+                edges[3] = vertex_interp(SHEAR_POINT, p[3], p[0], cube[3], cube[0]);
+            } 
+            if EDGE_TABLE[cc] & 16 {
+                edges[4] = vertex_interp(SHEAR_POINT, p[4], p[5], cube[4], cube[5]);
+            }
+            if EDGE_TABLE[cc] & 32 {
+                edges[5] = vertex_interp(SHEAR_POINT, p[5], p[6], cube[5], cube[6]);
+            }
+            if EDGE_TABLE[cc] & 64 {
+                edges[6] = vertex_interp(SHEAR_POINT, p[6], p[7], cube[6], cube[7]);
+            }
+            if EDGE_TABLE[cc] & 128 {
+                edges[7] = vertex_interp(SHEAR_POINT, p[7], p[4], cube[7], cube[4]);
+            }
+            if EDGE_TABLE[cc] & 256 {
+                edges[8] = vertex_interp(SHEAR_POINT, p[0], p[4], cube[0], cube[4]);
+            }
+            if EDGE_TABLE[cc] & 512 {
+                edges[9] = vertex_interp(SHEAR_POINT, p[1], p[5], cube[1], cube[5])
+            }
+            if EDGE_TABLE[cc] & 1024 {
+                edges[10] = vertex_interp(SHEAR_POINT, p[2], p[6], cube[2], cube[6])
+            }
+            if EDGE_TABLE[cc] & 2048 {
+                edges[11] = vertex_interp(SHEAR_POINT, p[3], p[7], cube[3], cube[7]);
+            }
+
+            let mut i = 0;
+            
+            while TRI_TABLE[cc][i] != -1{
+                let triangle = [
+                    edges[TRI_TABLE[cc][i]],
+                    edges[TRI_TABLE[cc][i+1]],
+                    edges[TRI_TABLE[cc][i+2]],
+                ];
+
+                i += 3;
+                triangles.push(triangle);
+            }
+            triangles
+        }).collect()
     }
 }
 
@@ -215,11 +276,11 @@ fn vertex_interp(shear: f32, p1: Pos, p2: Pos, valp1: f32, valp2: f32) -> Pos{
         p1
     } else {
         let mu = (shear - valp1) / (valp1 - valp2);
-        (
-            p1.0 + mu * (p2.0 - p1.0),
-            p1.1 + mu * (p2.1 - p1.1),
-            p1.2 + mu * (p2.2 - p1.2)
-        )
+        [
+            p1[0] + mu * (p2[0] - p1[0]),
+            p1[1] + mu * (p2[1] - p1[1]),
+            p1[2] + mu * (p2[2] - p1[2])
+        ]
     }
 }
 /*
@@ -261,15 +322,3 @@ mpVector LinearInterp(mp4Vector p1, mp4Vector p2, float value)
         return false;
      } */
 
-     pub struct Triangle{
-        xyz: [[f32; 3]; 3],
-     }
-
-     pub struct GridCell{
-        cube: [[f32; 3]; 8],
-        val: [f32; 8],
-     }
-
-    pub fn polygonise(grid: GridCell, shear: f32, trinagle: &mut Triangle) -> i32{
-
-    }
