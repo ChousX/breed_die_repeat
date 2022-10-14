@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_resource::PrimitiveTopology;
+use ordered_float::*;
 mod cpu;
 pub use cpu::*;
+use std::collections::HashMap;
 
 mod table;
 use table::*;
@@ -14,7 +16,6 @@ use share::*;
 type Normal = [f32; 3];
 type Uv = Vec2;
 type Index = usize;
-type Vertex = [f32; 3];
 ///(x,y,z)
 type Size = (usize, usize, usize);
 
@@ -34,7 +35,7 @@ const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
 ///          |\
 ///          | \?Z
 ///         -Y
-const CHUNK_ZERO_ZERO: Pos = (0.0, 0.0, 0.0);
+const CHUNK_ZERO_ZERO: Pos = [0.0, 0.0, 0.0];
 ///(min, max)
 const SHEAR_RANGE: (f32, f32) = (-1.0, 1.0);
 const SHEAR_POINT: f32 = SHEAR_RANGE.0 + SHEAR_RANGE.1;
@@ -67,12 +68,7 @@ impl Chunk {
     pub fn cubes(&self) -> Cubes {
         Cubes::from(self)
     }
-
-    pub fn set(&mut self, val: f32, pos: Pos) {
-        let (x, y, z) = pos;
-    }
 }
-
 
 impl Chunk {
     /// ________________________________
@@ -93,11 +89,10 @@ impl Chunk {
             to1D(x + 1, y, z + 1),
             to1D(x + 1, y, z),
             to1D(x, y, z),
-
             to1D(x, y + 1, z + 1),
             to1D(x + 1, y + 1, z + 1),
             to1D(x + 1, y + 1, z),
-            to1D(x, y + 1, z ),
+            to1D(x, y + 1, z),
         );
         [
             space[v0], space[v1], space[v2], space[v3], space[v4], space[v5], space[v6], space[v7],
@@ -105,80 +100,79 @@ impl Chunk {
     }
 }
 
-impl Chunk{
-    pub fn march(&self) -> Vec<Vec<[f32; 3]>>{
-
-        self.cubes().enumerate().map(|(i, cube)| {
-            let mut triangles = Vec::new();
-            let mut edges:[[f32; 3]; 12] = [[0.0f32; 3]; 12];
-            let cc = cube_case(&cube, SHEAR_POINT);
+impl Chunk {
+    pub fn march(&self) -> Mesh {
+        let mut vb = VertexBank::default();
+        let mut indeceis: Vec<u32> = Vec::new();
+        let _ = self.cubes().enumerate().map(|(i, cube)| {
+            let mut edges: [[f32; 3]; 12] = [[0.0f32; 3]; 12];
+            let cc = cube_case(&cube, SHEAR_POINT) as usize;
             let (x, y, z) = to3d(i);
-            const D: f32 = ISO_DISTANCE; 
+            const D: f32 = ISO_DISTANCE;
             let (x, y, z) = (x as f32 * D, y as f32 * D, z as f32 * D);
             let p: [[f32; 3]; 8] = [
-                [x, y, z + D], //0
+                [x, y, z + D],     //0
                 [x + D, y, z + D], //1
-                [x + D, y, z], //2
-                [x + D, y, z], //3
-
+                [x + D, y, z],     //2
+                [x + D, y, z],     //3
                 [x, y + D, z + D], //4
                 [x + D, y + D, z + D], //5
                 [x + D, y + D, z], //6
-                [x + D, y + D, z] //7            
-
+                [x + D, y + D, z], //7
             ];
-            if EDGE_TABLE[cc] == 0 {continue;}
-            if EDGE_TABLE[cc] & 1 {
+            if EDGE_TABLE[cc] == 0 {}
+            if EDGE_TABLE[cc] & 1 != 0 {
                 edges[0] = vertex_interp(SHEAR_POINT, p[0], p[1], cube[0], cube[1]);
             }
-            if EDGE_TABLE[cc] & 2 {
+            if EDGE_TABLE[cc] & 2 != 0 {
                 edges[1] = vertex_interp(SHEAR_POINT, p[1], p[2], cube[1], cube[2]);
             }
-            if EDGE_TABLE[cc] & 4 {
+            if EDGE_TABLE[cc] & 4 != 0 {
                 edges[2] = vertex_interp(SHEAR_POINT, p[2], p[3], cube[2], cube[3]);
             }
-            if EDGE_TABLE[cc] & 8 {
+            if EDGE_TABLE[cc] & 8 != 0 {
                 edges[3] = vertex_interp(SHEAR_POINT, p[3], p[0], cube[3], cube[0]);
-            } 
-            if EDGE_TABLE[cc] & 16 {
+            }
+            if EDGE_TABLE[cc] & 16 != 0 {
                 edges[4] = vertex_interp(SHEAR_POINT, p[4], p[5], cube[4], cube[5]);
             }
-            if EDGE_TABLE[cc] & 32 {
+            if EDGE_TABLE[cc] & 32 != 0 {
                 edges[5] = vertex_interp(SHEAR_POINT, p[5], p[6], cube[5], cube[6]);
             }
-            if EDGE_TABLE[cc] & 64 {
+            if EDGE_TABLE[cc] & 64 != 0 {
                 edges[6] = vertex_interp(SHEAR_POINT, p[6], p[7], cube[6], cube[7]);
             }
-            if EDGE_TABLE[cc] & 128 {
+            if EDGE_TABLE[cc] & 128 != 0 {
                 edges[7] = vertex_interp(SHEAR_POINT, p[7], p[4], cube[7], cube[4]);
             }
-            if EDGE_TABLE[cc] & 256 {
+            if EDGE_TABLE[cc] & 256 != 0 {
                 edges[8] = vertex_interp(SHEAR_POINT, p[0], p[4], cube[0], cube[4]);
             }
-            if EDGE_TABLE[cc] & 512 {
+            if EDGE_TABLE[cc] & 512 != 0 {
                 edges[9] = vertex_interp(SHEAR_POINT, p[1], p[5], cube[1], cube[5])
             }
-            if EDGE_TABLE[cc] & 1024 {
+            if EDGE_TABLE[cc] & 1024 != 0 {
                 edges[10] = vertex_interp(SHEAR_POINT, p[2], p[6], cube[2], cube[6])
             }
-            if EDGE_TABLE[cc] & 2048 {
+            if EDGE_TABLE[cc] & 2048 != 0 {
                 edges[11] = vertex_interp(SHEAR_POINT, p[3], p[7], cube[3], cube[7]);
             }
 
             let mut i = 0;
-            
-            while TRI_TABLE[cc][i] != -1{
-                let triangle = [
-                    edges[TRI_TABLE[cc][i]],
-                    edges[TRI_TABLE[cc][i+1]],
-                    edges[TRI_TABLE[cc][i+2]],
-                ];
+
+            while TRI_TABLE[cc][i] != -1 {
+                indeceis.push(vb.id(edges[TRI_TABLE[cc][i] as usize].into()));
+                indeceis.push(vb.id(edges[TRI_TABLE[cc][i + 1] as usize].into()));
+                indeceis.push(vb.id(edges[TRI_TABLE[cc][i + 2] as usize].into()));
 
                 i += 3;
-                triangles.push(triangle);
             }
-            triangles
-        }).collect()
+        });
+        let positions = vb.drain();
+        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.set_indices(Some(Indices::U32(indeceis)));
+        mesh
     }
 }
 
@@ -265,24 +259,69 @@ fn cube_case(cube: &Cube, shear: f32) -> u8 {
     acum
 }
 
-fn vertex_interp(shear: f32, p1: Pos, p2: Pos, valp1: f32, valp2: f32) -> Pos{
-    if (shear - valp1).abs() < 0.00001{ 
+fn vertex_interp(shear: f32, p1: Pos, p2: Pos, valp1: f32, valp2: f32) -> Pos {
+    if (shear - valp1).abs() < 0.00001 {
         p1
-    } else
-    if (shear - valp2).abs() < 0.00001 {
+    } else if (shear - valp2).abs() < 0.00001 {
         p2
-    } else
-    if (valp1-valp2).abs() < 0.00001{
+    } else if (valp1 - valp2).abs() < 0.00001 {
         p1
     } else {
         let mu = (shear - valp1) / (valp1 - valp2);
         [
             p1[0] + mu * (p2[0] - p1[0]),
             p1[1] + mu * (p2[1] - p1[1]),
-            p1[2] + mu * (p2[2] - p1[2])
+            p1[2] + mu * (p2[2] - p1[2]),
         ]
     }
 }
+
+#[derive(Default)]
+pub struct VertexBank {
+    data: HashMap<Vertex, u32>,
+    len: usize,
+}
+impl VertexBank {
+    pub fn new() -> Self {
+        Self {
+            data: HashMap::default(),
+            len: 0,
+        }
+    }
+    pub fn id(&mut self, id: Vertex) -> u32 {
+        if let Some(output) = self.data.get(&id) {
+            *output
+        } else {
+            let output = self.len as u32;
+            self.data.insert(id, output );
+            self.len += 1;
+            output
+        }
+    }
+    pub fn drain(mut self) -> Vec<[f32; 3]>{
+        let len = self.len;
+        let mut output = Vec::with_capacity(len);
+        for (v, i) in self.data.drain(){
+            output[i as usize] = v.into();
+        }
+        output
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, PartialOrd, Eq)]
+pub struct Vertex([OrderedFloat<f32>; 3]);
+impl From<[f32; 3]> for Vertex {
+    fn from(v: [f32; 3]) -> Self {
+        Self([OrderedFloat(v[0]), OrderedFloat(v[1]), OrderedFloat(v[2])])
+    }
+}
+
+impl Into<[f32; 3]> for Vertex {
+    fn into(self) -> [f32; 3] {
+        [self.0[0].into(), self.0[1].into(), self.0[2].into()]
+    }
+}
+
 /*
 mpVector LinearInterp(mp4Vector p1, mp4Vector p2, float value)
 {
@@ -291,13 +330,13 @@ mpVector LinearInterp(mp4Vector p1, mp4Vector p2, float value)
         mp4Vector temp;
         temp = p1;
         p1 = p2;
-        p2 = temp;    
+        p2 = temp;
     }
 
     mpVector p;
     if(fabs(p1.val - p2.val) > 0.00001)
         p = (mpVector)p1 + ((mpVector)p2 - (mpVector)p1)/(p2.val - p1.val)*(value - p1.val);
-    else 
+    else
         p = (mpVector)p1;
     return p;
 }
@@ -321,4 +360,3 @@ mpVector LinearInterp(mp4Vector p1, mp4Vector p2, float value)
 
         return false;
      } */
-
