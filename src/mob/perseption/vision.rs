@@ -1,5 +1,5 @@
 use super::{PerseptionEvent, Preseved};
-use crate::{rts_camera::RtsCamera, recorce::mResorce};
+use crate::{recorce::mResorce, rts_camera::RtsCamera};
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -30,7 +30,7 @@ pub fn viewing(
             let (x, y, z) = (t.translation.x, t.translation.y, t.translation.z);
             let r = vision.range;
 
-            if  entity != id
+            if entity != id
                 && x <= mx + r
                 && x >= mx - r
                 && y <= my + r
@@ -38,16 +38,13 @@ pub fn viewing(
                 && z <= mz + r
                 && y >= mz - r
             {
-                if recorces.contains(id){
+                if recorces.contains(id) {
                     seen.push(Preseved::Food(id))
                 }
-            } 
+            }
         }
-        if !seen.is_empty(){
-            output.send(PerseptionEvent::TrueSight{
-                id: entity,
-                seen
-            });
+        if !seen.is_empty() {
+            output.send(PerseptionEvent::TrueSight { id: entity, seen });
         }
     }
 }

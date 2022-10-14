@@ -58,7 +58,6 @@ impl Speed {
         self.momentum = Vec3::ZERO;
     }
 
-    
     pub fn friction(&mut self, value: f32) {
         let (x, _y, z) = (self.momentum.x, self.momentum.y, self.momentum.z);
         //x

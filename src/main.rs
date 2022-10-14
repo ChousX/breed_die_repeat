@@ -7,6 +7,7 @@ mod mob;
 mod recorce;
 mod rts_camera;
 mod seenbuild;
+mod terrain;
 
 fn main() {
     App::new()
@@ -28,11 +29,11 @@ fn init(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     seenbuild::SeenBuilder::new()
-        .add_plain_size(100.0)
+        .add_plain_size(1.0)
         .camera_state(false)
         .build(&mut commands, &mut meshes, &mut materials);
     rts_camera::build_camera(
         &mut commands,
         Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)),
-    )
+    );
 }

@@ -100,33 +100,40 @@ impl SeenBuilder {
         materials: &mut ResMut<Assets<StandardMaterial>>,
     ) {
         //spawining the plain
-        commands.spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Plane {
-                size: self.plane_size.unwrap_or(5.0),
-            })),
-            material: materials.add(self.plane_color.unwrap_or(Color::rgb(0.2, 0.2, 0.4)).into()),
-            transform: self.get_plain_transform(),
-            ..default()
-        }).insert(DontView);
+        commands
+            .spawn_bundle(PbrBundle {
+                mesh: meshes.add(Mesh::from(shape::Plane {
+                    size: self.plane_size.unwrap_or(5.0),
+                })),
+                material: materials
+                    .add(self.plane_color.unwrap_or(Color::rgb(0.2, 0.2, 0.4)).into()),
+                transform: self.get_plain_transform(),
+                ..default()
+            })
+            .insert(DontView);
 
         //spawning light
-        commands.spawn_bundle(PointLightBundle {
-            point_light: PointLight {
-                intensity: self.light_intensity.unwrap_or(15000.0),
-                shadows_enabled: self.shadows,
-                ..default()
-            },
+        commands
+            .spawn_bundle(PointLightBundle {
+                point_light: PointLight {
+                    intensity: self.light_intensity.unwrap_or(15000.0),
+                    shadows_enabled: self.shadows,
+                    ..default()
+                },
 
-            transform: self.get_light_pos(),
-            ..default()
-        }).insert(DontView);
+                transform: self.get_light_pos(),
+                ..default()
+            })
+            .insert(DontView);
 
         //spawing camera
         if self.camera {
-            commands.spawn_bundle(Camera3dBundle {
-                transform: self.get_camera_transform(),
-                ..default()
-            }).insert(DontView);
+            commands
+                .spawn_bundle(Camera3dBundle {
+                    transform: self.get_camera_transform(),
+                    ..default()
+                })
+                .insert(DontView);
         }
     }
 }

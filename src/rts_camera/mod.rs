@@ -3,9 +3,9 @@ use std::ops::Neg;
 use bevy::prelude::*;
 mod keyboard;
 mod mouse;
+use crate::mob::DontView;
 use keyboard::{move_camera_keybored, rotate_camera_keybored, RtsKeyboard};
 use mouse::{move_camera_mouse, rotate_camera_mouse, zoom_camera, RtsMouse};
-use crate::mob::DontView;
 
 pub fn build_camera(commands: &mut Commands, transform: Transform) {
     commands
@@ -13,7 +13,8 @@ pub fn build_camera(commands: &mut Commands, transform: Transform) {
         .insert_bundle(Camera3dBundle {
             transform,
             ..default()
-        }).insert(DontView);
+        })
+        .insert(DontView);
 }
 
 #[derive(Bundle, Default)]
