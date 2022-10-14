@@ -260,3 +260,16 @@ mpVector LinearInterp(mp4Vector p1, mp4Vector p2, float value)
 
         return false;
      } */
+
+     pub struct Triangle{
+        xyz: [[f32; 3]; 3],
+     }
+
+     pub struct GridCell{
+        cube: [[f32; 3]; 8],
+        val: [f32; 8],
+     }
+
+    pub fn polygonise(grid: GridCell, shear: f32, trinagle: &mut Triangle) -> i32{
+
+    }
