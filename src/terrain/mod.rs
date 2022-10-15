@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod marching_cubes;
+pub use marching_cubes::Chunk;
 
 pub struct TerrainPlugin;
 impl Plugin for TerrainPlugin {

@@ -16,3 +16,4 @@ bevy_rapier3d = {version = "0.17.0", features= ["debug-render", "parallel", "enh
 bevy-inspector-egui = "0.13.0"
 rand = "0.8.5"
 ordered-float = {version = "3.2.0", features= ["rand"]}
+noise = "0.8.1"

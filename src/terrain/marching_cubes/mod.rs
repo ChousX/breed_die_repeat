@@ -2,9 +2,11 @@ use bevy::prelude::*;
 use bevy::render::mesh::Indices;
 use bevy::render::render_resource::PrimitiveTopology;
 use ordered_float::*;
+// use rand::prelude::*;
+use noise::{NoiseFn, OpenSimplex, Seedable};
 mod cpu;
 pub use cpu::*;
-use std::collections::HashMap;
+use std::{collections::HashMap, mem::MaybeUninit};
 
 mod table;
 use table::*;
@@ -48,7 +50,7 @@ const ISO_DISTANCE: f32 = 1.0;
 
 pub struct Chunk {
     space: Space,
-    changed: bool,
+    pub changed: bool,
     mesh: Option<Handle<Mesh>>,
 }
 
@@ -68,7 +70,37 @@ impl Chunk {
     pub fn cubes(&self) -> Cubes {
         Cubes::from(self)
     }
-    
+
+    pub fn set(&mut self, x: usize, y: usize, z: usize, val: f32) {
+        let mut s_val = &mut self.space[to1D(x, y, z)];
+        if *s_val != val{
+            *s_val = val;
+            self.changed = true;
+        } 
+    }
+
+    pub fn rng(seed: Option<u32>) -> Self {
+        let mut noise = OpenSimplex::new(if let Some(seed) = seed { seed } else { 0 });
+        
+        let mut space: Space = {
+            let mut space: [MaybeUninit<f32>; CHUNK_SIZE_TOTALE] =
+                unsafe { MaybeUninit::uninit().assume_init() };
+
+            let mut index = 0;
+            for z in 0..CHUNK_SIZE.2{
+                for y in 0..CHUNK_SIZE.1{
+                    for x in 0..CHUNK_SIZE.0{
+                        space[index] = MaybeUninit::new(noise.get([x as f64, y as f64, z as f64]) as f32);
+                        index += 1;
+                    }
+                }
+            }
+
+            unsafe { std::mem::transmute::<_, [f32; CHUNK_SIZE_TOTALE]>(space) }
+        };
+
+        Self::new(space)
+    }
 }
 
 impl Chunk {
@@ -105,21 +137,23 @@ impl Chunk {
     pub fn march(&self) -> Mesh {
         let mut vb = VertexBank::default();
         let mut indeceis: Vec<u32> = Vec::new();
-        let _ = self.cubes().enumerate().map(|(i, cube)| {
+        let mut normal_list: Vec<([f32; 3], [usize; 3])> = Vec::new();
+        
+        for (i, cube) in self.cubes().enumerate(){
             let mut edges: [[f32; 3]; 12] = [[0.0f32; 3]; 12];
             let cc = cube_case(&cube, SHEAR_POINT) as usize;
             let (x, y, z) = to3d(i);
             const D: f32 = ISO_DISTANCE;
             let (x, y, z) = (x as f32 * D, y as f32 * D, z as f32 * D);
             let p: [[f32; 3]; 8] = [
-                [x, y, z + D],     //0
-                [x + D, y, z + D], //1
-                [x + D, y, z],     //2
-                [x + D, y, z],     //3
-                [x, y + D, z + D], //4
+                [x, y, z + D],         //0
+                [x + D, y, z + D],     //1
+                [x + D, y, z],         //2
+                [x + D, y, z],         //3
+                [x, y + D, z + D],     //4
                 [x + D, y + D, z + D], //5
-                [x + D, y + D, z], //6
-                [x + D, y + D, z], //7
+                [x + D, y + D, z],     //6
+                [x + D, y + D, z],     //7
             ];
             if EDGE_TABLE[cc] == 0 {}
             if EDGE_TABLE[cc] & 1 != 0 {
@@ -159,23 +193,72 @@ impl Chunk {
                 edges[11] = vertex_interp(SHEAR_POINT, p[3], p[7], cube[3], cube[7]);
             }
 
+            
+
             let mut i = 0;
 
             while TRI_TABLE[cc][i] != -1 {
-                indeceis.push(vb.id(edges[TRI_TABLE[cc][i] as usize].into()));
-                indeceis.push(vb.id(edges[TRI_TABLE[cc][i + 1] as usize].into()));
-                indeceis.push(vb.id(edges[TRI_TABLE[cc][i + 2] as usize].into()));
-
+                let p1 = edges[TRI_TABLE[cc][i] as usize].into();
+                let p2 = edges[TRI_TABLE[cc][i + 1] as usize].into();
+                let p3 = edges[TRI_TABLE[cc][i + 2] as usize].into();
+                let i1 = vb.id(p1);
+                let i2 = vb.id(p2);
+                let i3 = vb.id(p3);
+                indeceis.push(i1);
+                indeceis.push(i2);
+                indeceis.push(i3);
+                normal_list.push((surface_normal(p1, p2, p3), [i1 as usize, i2 as usize, i3 as usize]));
                 i += 3;
             }
-        });
+        }
         let positions = vb.drain();
+
+        let mut normals = vec![Vec3::ZERO; positions.len()];
+        for (normal, pos) in normal_list.into_iter(){
+            let v = Vec3::from(normal);
+            normals[pos[0]] += v;
+            normals[pos[0]] /= 2.;
+            normals[pos[1]] += v;
+            normals[pos[1]] /= 2.;
+            normals[pos[2]] += v;
+            normals[pos[2]] /= 2.;
+        }
+        let normals: Vec<[f32; 3]> = normals.into_iter().map(|v|{[v.x, v.y, v.z]}).collect();
+
+
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
         mesh.set_indices(Some(Indices::U32(indeceis)));
         mesh
     }
 }
+
+
+#[inline]
+fn surface_normal(p1: Vertex, p2: Vertex, p3: Vertex) -> [f32; 3] {
+    let p1: Vec3 = p1.into();
+    let p2: Vec3 = p2.into();
+    let p3: Vec3 = p3.into();
+
+    let u = p2 - p1;
+    let v = p3 - p1;
+    [
+        u.y * v.z - u.z * v.y,
+        u.z * v.x - u.x * v.z,
+        u.x * v.y - u.y * v.x,
+    ]
+}
+
+/*
+#[inline]
+fn map_range<T: Copy>(from_range: (T, T), to_range: (T, T), s: T) -> T
+where
+    T: Add<T, Output = T> + Sub<T, Output = T> + Mul<T, Output = T> + Div<T, Output = T>,
+{
+    to_range.0 + (s - from_range.0) * (to_range.1 - to_range.0) / (from_range.1 - from_range.0)
+}
+*/
 
 #[inline]
 fn to1D(x: Index, y: Index, z: Index) -> Index {
@@ -260,6 +343,7 @@ fn cube_case(cube: &Cube, shear: f32) -> u8 {
     acum
 }
 
+#[inline]
 fn vertex_interp(shear: f32, p1: Pos, p2: Pos, valp1: f32, valp2: f32) -> Pos {
     if (shear - valp1).abs() < 0.00001 {
         p1
@@ -289,20 +373,22 @@ impl VertexBank {
             len: 0,
         }
     }
+    ///inshures you have the id, and returns its index
     pub fn id(&mut self, id: Vertex) -> u32 {
         if let Some(output) = self.data.get(&id) {
             *output
         } else {
             let output = self.len as u32;
-            self.data.insert(id, output );
+            self.data.insert(id, output);
             self.len += 1;
             output
         }
     }
-    pub fn drain(mut self) -> Vec<[f32; 3]>{
+    ///consumes self and returns a properly indexed vec
+    pub fn drain(mut self) -> Vec<[f32; 3]> {
         let len = self.len;
-        let mut output = Vec::with_capacity(len);
-        for (v, i) in self.data.drain(){
+        let mut output: Vec<[f32; 3]> = vec![[0.,0.,0.]; len];
+        for (v, i) in self.data.drain() {
             output[i as usize] = v.into();
         }
         output
@@ -320,6 +406,12 @@ impl From<[f32; 3]> for Vertex {
 impl Into<[f32; 3]> for Vertex {
     fn into(self) -> [f32; 3] {
         [self.0[0].into(), self.0[1].into(), self.0[2].into()]
+    }
+}
+
+impl Into<Vec3> for Vertex {
+    fn into(self) -> Vec3 {
+        Vec3::new(self.0[0].into(), self.0[1].into(), self.0[2].into())
     }
 }
 

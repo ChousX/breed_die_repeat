@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
-use crate::mob::DontView;
+use crate::{mob::DontView, terrain::Chunk};
 
 /// for prototyping
 /// Requires: DefaultPlugins
@@ -99,12 +99,14 @@ impl SeenBuilder {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
     ) {
+        let chunk = Chunk::rng(None);
         //spawining the plain
         commands
             .spawn_bundle(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::Plane {
-                    size: self.plane_size.unwrap_or(5.0),
-                })),
+                // mesh: meshes.add(Mesh::from(shape::Plane {
+                //     size: self.plane_size.unwrap_or(5.0),
+                // })),
+                mesh: meshes.add(chunk.march()),
                 material: materials
                     .add(self.plane_color.unwrap_or(Color::rgb(0.2, 0.2, 0.4)).into()),
                 transform: self.get_plain_transform(),
