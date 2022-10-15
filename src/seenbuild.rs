@@ -24,7 +24,7 @@ pub struct SeenBuilder {
 impl SeenBuilder {
     fn get_plain_transform(&self) -> Transform {
         let (x, y, z) = self.plane_position.unwrap_or((0.0, 0.0, 0.0));
-        Transform::from_xyz(x, y, z).with_scale(Vec3::new(10.,10.,10.))
+        Transform::from_xyz(x, y, z).with_scale(Vec3::new(1., 1., 1.))
     }
 
     fn get_light_pos(&self) -> Transform {
@@ -99,7 +99,8 @@ impl SeenBuilder {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
     ) {
-        let chunk = Chunk::rng(None);
+        let mut chunk = Chunk::blank();
+        chunk.add_plain(1);
         //spawining the plain
         commands
             .spawn_bundle(PbrBundle {

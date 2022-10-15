@@ -29,13 +29,13 @@ type Space = [f32; CHUNK_SIZE_TOTALE];
 const CHUNK_SIZE: Size = (10, 10, 10);
 const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
 ///         +Y
-///      +Z  |
+///      -Z  |
 ///       \  |
 ///        \ |(0,0,0)
 ///-X_______\|/________+X
 ///          \
 ///          |\
-///          | \-Z
+///          | \+Z
 ///         -Y
 const CHUNK_ZERO_ZERO: Pos = [0.0, 0.0, 0.0];
 ///(min, max)
@@ -51,7 +51,6 @@ const ISO_DISTANCE: f32 = 1.0;
 pub struct Chunk {
     space: Space,
     pub changed: bool,
-    mesh: Option<Handle<Mesh>>,
 }
 
 impl Chunk {
@@ -59,7 +58,6 @@ impl Chunk {
         Self {
             space,
             changed: true,
-            mesh: None,
         }
     }
 
@@ -71,6 +69,19 @@ impl Chunk {
         Cubes::from(self)
     }
 
+    pub fn blank() -> Self{
+        let space: Space = [f32::MIN; CHUNK_SIZE_TOTALE];
+        Self::new(space)
+    }
+
+    pub fn add_plain(&mut self, height: usize){
+        for z in 0..CHUNK_SIZE.2{
+            for x in 0..CHUNK_SIZE.0{
+                self.set(x, height, z, SHEAR_POINT)
+            }
+        }
+    }
+
     pub fn set(&mut self, x: usize, y: usize, z: usize, val: f32) {
         let mut s_val = &mut self.space[to1D(x, y, z)];
         if *s_val != val{
@@ -78,6 +89,8 @@ impl Chunk {
             self.changed = true;
         } 
     }
+
+
 
     pub fn rng(seed: Option<u32>) -> Self {
         let mut noise = OpenSimplex::new(if let Some(seed) = seed { seed } else { 0 });
@@ -90,7 +103,7 @@ impl Chunk {
             for z in 0..CHUNK_SIZE.2{
                 for y in 0..CHUNK_SIZE.1{
                     for x in 0..CHUNK_SIZE.0{
-                        space[index] = MaybeUninit::new(noise.get([x as f64, y as f64, z as f64]) as f32);
+                        space[index] = MaybeUninit::new(noise.get([x as f64 , y as f64, z as f64]) as f32);
                         index += 1;
                     }
                 }
@@ -316,28 +329,28 @@ impl From<&Chunk> for Cubes {
 
 fn cube_case(cube: &Cube, shear: f32) -> u8 {
     let mut acum = 0u8;
-    if cube[0] < shear {
+    if cube[0] >= shear {
         acum |= 1
     }
-    if cube[1] < shear {
+    if cube[1] >= shear {
         acum |= 2
     }
-    if cube[2] < shear {
+    if cube[2] >= shear {
         acum |= 4
     }
-    if cube[3] < shear {
+    if cube[3] >= shear {
         acum |= 8
     }
-    if cube[4] < shear {
+    if cube[4] >= shear {
         acum |= 16
     }
-    if cube[5] < shear {
+    if cube[5] >= shear {
         acum |= 32
     }
-    if cube[6] < shear {
+    if cube[6] >= shear {
         acum |= 64
     }
-    if cube[7] < shear {
+    if cube[7] >= shear {
         acum |= 128
     }
     acum
