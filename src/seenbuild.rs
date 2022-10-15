@@ -24,7 +24,7 @@ pub struct SeenBuilder {
 impl SeenBuilder {
     fn get_plain_transform(&self) -> Transform {
         let (x, y, z) = self.plane_position.unwrap_or((0.0, 0.0, 0.0));
-        Transform::from_xyz(x, y, z)
+        Transform::from_xyz(x, y, z).with_scale(Vec3::new(10.,10.,10.))
     }
 
     fn get_light_pos(&self) -> Transform {
