@@ -62,7 +62,7 @@ pub enum CameraMotionEvent {
     Rotate(f32),
     Zoom(f32),
 }
-
+//TODO: need to apply the rotation  to the movement
 fn camera_motion(
     mut events: EventReader<CameraMotionEvent>,
     mut q: Query<(&mut RtsCamera, &mut Transform)>,

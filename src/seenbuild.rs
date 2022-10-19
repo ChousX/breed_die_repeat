@@ -99,8 +99,10 @@ impl SeenBuilder {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
     ) {
-        let mut chunk = Chunk::blank();
-        chunk.add_plain(1);
+        let chunk = Chunk::rng(None);
+        // let mut chunk = Chunk::blank();
+        // chunk.add_plain(1);
+        // chunk.add_plain(2);
         //spawining the plain
         commands
             .spawn_bundle(PbrBundle {
