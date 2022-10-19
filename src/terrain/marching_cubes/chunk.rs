@@ -140,11 +140,11 @@ impl Chunk {
 
 impl Chunk {
     pub fn march(&self) -> Mesh {
-        let mut vb = VertexBank::default();
+        let mut vb = VertexBank::default(); //todo test vb
         let mut indeceis: Vec<u32> = Vec::new();
         let mut normal_list: Vec<([f32; 3], [usize; 3])> = Vec::new();
         let (mut x, mut y, mut z) = (0, 0, 0);
-        for (i, cube) in self.cubes().enumerate() {
+        for cube in self.cubes() {
             let mut edges: [[f32; 3]; 12] = [[0.0000f32; 3]; 12];
             if x == CHUNK_SIZE.0 - 1 {
                 x = 0;
@@ -158,7 +158,7 @@ impl Chunk {
 
             const D: f32 = ISO_DISTANCE;
             let p: [[f32; 3]; 8] = {
-                let (x, y, z) = (x as f32 * D, y as f32 * D, z as f32 * D);
+                let (x, y, z) = (x as f32 * D, y as f32 * -D, z as f32 * D);
                 [
                     [x, y, z + D],         //0
                     [x + D, y, z + D],     //1
@@ -171,7 +171,7 @@ impl Chunk {
                 ]
             };
             x += 1;
-            if EDGE_TABLE[cc] == 0 {}
+            if EDGE_TABLE[cc] == 0 {continue;}
             if EDGE_TABLE[cc] & 1 != 0 {
                 edges[0] = vertex_interp(SHEAR_POINT, p[0], p[1], cube[0], cube[1]);
             }
@@ -209,23 +209,26 @@ impl Chunk {
                 edges[11] = vertex_interp(SHEAR_POINT, p[3], p[7], cube[3], cube[7]);
             }
 
-            let mut i = 0;
 
-            while TRI_TABLE[cc][i] != -1 {
-                let p1 = edges[TRI_TABLE[cc][i] as usize].into();
-                let p2 = edges[TRI_TABLE[cc][i + 1] as usize].into();
-                let p3 = edges[TRI_TABLE[cc][i + 2] as usize].into();
-                let i1 = vb.id(p1);
-                let i2 = vb.id(p2);
-                let i3 = vb.id(p3);
-                indeceis.push(i1);
-                indeceis.push(i2);
-                indeceis.push(i3);
-                normal_list.push((
-                    surface_normal(p1, p2, p3),
-                    [i1 as usize, i2 as usize, i3 as usize],
-                ));
-                i += 3;
+
+            {
+                let mut i = 0;
+                while TRI_TABLE[cc][i] != -1 {
+                    let p1 = edges[TRI_TABLE[cc][i] as usize].into();
+                    let p2 = edges[TRI_TABLE[cc][i + 1] as usize].into();
+                    let p3 = edges[TRI_TABLE[cc][i + 2] as usize].into();
+                    let i1 = vb.id(p1);
+                    let i2 = vb.id(p2);
+                    let i3 = vb.id(p3);
+                    indeceis.push(i1);
+                    indeceis.push(i2);
+                    indeceis.push(i3);
+                    normal_list.push((
+                        surface_normal(p1, p2, p3),
+                        [i1 as usize, i2 as usize, i3 as usize],
+                    ));
+                    i += 3;
+                }
             }
         }
 
@@ -241,7 +244,14 @@ impl Chunk {
             normals[pos[2]] += v;
             normals[pos[2]] /= 2.;
         }
-        let normals: Vec<[f32; 3]> = normals.into_iter().map(|v| [v.x, v.y, v.z]).collect();
+
+        let normals: Vec<[f32; 3]> = normals
+            .into_iter()
+            .map(|mut v| {
+                //v = -v;
+                [v.x, v.y, v.z]
+            })
+            .collect();
 
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
