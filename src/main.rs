@@ -32,6 +32,8 @@ fn init(
     //     .camera_state(false)
     //     .build(&mut commands, &mut meshes, &mut materials);
     Chunk::spawn(&mut commands, &mut meshes, &mut materials, (0,0,0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (-1,0,0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (1,0,0));
     rts_camera::build_camera(
         &mut commands,
         Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)),
