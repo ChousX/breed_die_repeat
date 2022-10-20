@@ -22,24 +22,96 @@ mod table;
 pub struct ChunkLoader(u16);
 
 pub struct ChunkManager{
-    chunks: VecDeque<VecDeque<VecDeque<Option<(Entity, (i32, i32, i32))>>>>
+    chunks: VecDeque<VecDeque<VecDeque<Option<(Entity, (i32, i32, i32))>>>>,
+    last: Option<(usize, usize, usize)>,
+    loaded: usize
 }
 
 impl ChunkManager{
-    pub fn exists(&self, pos: (i32, i32, i32)) -> bool{
+    ///depricated still works though i think. Bump bump bummmmm
+        fn _exists(&self, pos: (i32, i32, i32)) -> bool{
         for z in 0..self.chunks.len(){
             for y in 0..self.chunks[z].len(){
                 for x in 0..self.chunks[z][y].len(){
-                    if let Some((_, (cx, cy, cz)) = self.chunks[z][y][x]{
+                    if let Some((_, (cx, cy, cz))) = self.chunks[z][y][x]{
                         if pos.0 == cx && pos.1 == cy && pos.2 == cz{
                             return true;
                         } else {
-                            
+
+                            let rx = cx - pos.0; 
+                            let ry = cy - pos.1;
+                            let rz = cz - pos.2; 
+
+                            let x = rx + x as i32;
+                            let y = ry + y as i32;
+                            let z = rz + z as i32;
+
+                            if z >= 0 && z < self.chunks.len() as i32{
+                                if y >= 0 && y < self.chunks[z as usize].len() as i32{
+                                    if x >= 0 && x < self.chunks[z as usize][y as usize].len() as i32{
+                                        if let Some(_) = self.chunks[z as usize][y as usize][x as usize]{
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    } else {
+                                        return false;
+                                    }
+                                } else {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
                         }
                     }
                 }
             }
-        }        
+        }
+        false        
+    }
+
+    ///wether or not a chunk exists with in the manager
+    pub fn exists(&self, pos: (i32, i32, i32)) -> bool{
+    todo!()    
+    }
+
+    ///Get the Entity id if it exists
+    pub fn get(&self, pos: (i32, i32, i32)) -> Option<Entity>{
+        todo!()
+    } 
+
+    ///Get the Entity id if it exists and set the last to this postion
+    //(not really sure if this one is usfull)
+    pub fn get_change_last(&mut self, pos: (i32, i32, i32)) -> Option<&Entity>{
+        
+        todo!()
+    }
+
+    ///Add an entity to the manager if one already exists do nothing and report the failer
+    pub fn add(&mut self, entity: Entity, pos: (i32, i32, i32)) -> bool{
+        todo!()
+    }
+
+    ///Remove any unused z and y vecs
+    pub fn cull(&mut self){
+        todo!()
+    }
+
+    ///remove and return the Entity. if there is nothing there reter None aswell
+    pub fn pop(&mut self, pos: (i32, i32, i32)) -> Option<Entity>{
+        todo!()
+    }
+
+    ///give the number of chunks that are loaded 
+    pub fn chunks_loaded(&self) -> usize{
+        todo!()
+    }
+}
+
+impl ChunkManager{
+    fn index(&self, pos: (i32 , i32, i32)) -> (usize, usize, usize){
+        todo!()
     }
 }
 
