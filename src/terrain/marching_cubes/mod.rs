@@ -110,8 +110,37 @@ impl ChunkManager{
 }
 
 impl ChunkManager{
-    fn index(&self, pos: (i32 , i32, i32)) -> (usize, usize, usize){
-        todo!()
+    /// If the chunk at the give pos is in the manager it will return its pos in the chunks
+    fn index(&self, pos: (i32 , i32, i32)) -> Option<(usize, usize, usize)>{
+        let last = self.last?;
+        let (_, (x, y, z)) = self.simple_get(last)?;
+        let x = pos.0 - x;
+        let y = pos.1 - y;
+        let z = pos.2 - z;
+
+        let (lx, ly, lz) = last;
+
+        let (x, y, z) = (lx as i32 + x, ly as i32 + y, lz as i32 + z);
+
+        if x < 0 &&  y < 0 &&  z < 0{
+            return None;
+        }
+
+        let z_len = self.chunks.len();
+        if x < z_len as i32{
+            let y_len = self.chunks[z_len].len();
+            if y < y_len as i32{
+                let x_len = self.chunks[z_len][y_len].len();
+                if x < x_len as i32{
+                    return Some((x as usize, y as usize, z as usize))
+                }
+            }
+        }
+        None
+    }
+
+    fn simple_get(&self, pos: (usize, usize, usize)) -> Option<(Entity, (i32, i32, i32))>{
+        self.chunks[pos.0][pos.1][pos.2]
     }
 }
 
