@@ -4,6 +4,8 @@ use bevy::render::render_resource::PrimitiveTopology;
 use noise::{NoiseFn, OpenSimplex, Seedable};
 use std::{collections::HashMap, mem::MaybeUninit};
 
+use crate::mob::DontView;
+
 use super::{
     table::*,
     vertex::{Vertex, VertexBank},
@@ -19,8 +21,9 @@ type Pos = [f32; 3];
 
 type Space = [f32; CHUNK_SIZE_TOTALE];
 
-const CHUNK_SIZE: Size = (10, 10, 10);
+pub const CHUNK_SIZE: Size = (10, 10, 10);
 const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
+pub const CHUNK_VOLUME: (f32, f32, f32) = (CHUNK_SIZE.0 as f32 * ISO_DISTANCE, CHUNK_SIZE.1 as f32 * ISO_DISTANCE, CHUNK_SIZE.2 as f32 * ISO_DISTANCE);
 ///         +Y
 ///      -Z  |
 ///       \  |
@@ -41,6 +44,7 @@ type Cube = [f32; 8];
 
 const ISO_DISTANCE: f32 = 1.0;
 
+#[derive(Component)]
 pub struct Chunk {
     space: Space,
     pub changed: bool,
@@ -258,6 +262,32 @@ impl Chunk {
         mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
         mesh.set_indices(Some(Indices::U32(indeceis)));
         mesh
+    }
+}
+
+impl Chunk{
+    pub fn spawn(
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+        pos: (i32, i32, i32)
+    ){
+        let mut chunk = Chunk::blank();
+        chunk.add_plain(1);
+        chunk.add_plain(2);
+
+        let transform = Transform::from_xyz(pos.0 as f32 * CHUNK_VOLUME.0, pos.1 as f32 * CHUNK_VOLUME.1, pos.2 as f32 * CHUNK_VOLUME.2);
+
+        commands.spawn_bundle(PbrBundle{
+            transform,
+            mesh: meshes.add(chunk.march()),
+            material: materials.add(
+                Color::rgb(0.2, 0.2, 0.4).into()
+            ),
+            ..default()
+        })
+        .insert(chunk)
+        .insert(DontView);
     }
 }
 

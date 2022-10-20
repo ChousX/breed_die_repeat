@@ -7,7 +7,7 @@
 //          |\
 //          | \+Z
 //         -Y
-use bevy::prelude::*;
+use bevy::{prelude::*, transform};
 use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
 use std::collections::VecDeque;
 
@@ -19,16 +19,3 @@ pub use chunk::*;
 
 mod table;
 
-pub fn chunk_spawner(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: &mut ResMut<Assets<StandardMaterial>>,
-){
-
-}
-
-pub fn chunk_culler(
-    
-){
-
-}
