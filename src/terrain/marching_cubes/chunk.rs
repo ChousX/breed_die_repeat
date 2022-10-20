@@ -118,12 +118,12 @@ impl Chunk {
     ///| \                               \             |\               |\
     ///|  \                               \            | \              | \
     ///|   \                               \           |  \             |  \          
-    /// \   \                               \          |   7____________|__6\                 
-    ///  \  |\---\---------------------------\        0|___|____________1   |     
-    ///   \ | V___\___________________________\        \   |             \  |
-    ///     | |    |                          |         \  |              \ |
-    ///      \|    |                          |          \ |               \|
-    ///       \____|__________________________|           \|3_______________2     
+    ///|\   \                               \          |   7____________|__6\                 
+    ///| \  |\---\---------------------------\        0|___|____________1   |     
+    ///|  \ | V___\___________________________\        \   |             \  |
+    ///\    | |    |                          |         \  |              \ |
+    /// \   |\|    |                          |          \ |               \|
+    ///  \  | \____|__________________________|           \|3_______________2     
     fn p_cube(space: &[f32; CHUNK_SIZE_TOTALE], zz: (Index, Index, Index)) -> Cube {
         let (x, y, z) = zz;
         let (v0, v1, v2, v3, v4, v5, v6, v7) = (
@@ -144,7 +144,7 @@ impl Chunk {
 
 impl Chunk {
     pub fn march(&self) -> Mesh {
-        let mut vb = VertexBank::default(); //todo test vb
+        let mut vb = VertexBank::default(); 
         let mut indeceis: Vec<u32> = Vec::new();
         let mut normal_list: Vec<([f32; 3], [usize; 3])> = Vec::new();
         let (mut x, mut y, mut z) = (0, 0, 0);
@@ -214,16 +214,15 @@ impl Chunk {
             }
 
 
-
             {
                 let mut i = 0;
                 while TRI_TABLE[cc][i] != -1 {
                     let p1 = edges[TRI_TABLE[cc][i] as usize].into();
                     let p2 = edges[TRI_TABLE[cc][i + 1] as usize].into();
                     let p3 = edges[TRI_TABLE[cc][i + 2] as usize].into();
-                    let i1 = vb.id(p1);
+                    let i1 = vb.id(p3);
                     let i2 = vb.id(p2);
-                    let i3 = vb.id(p3);
+                    let i3 = vb.id(p1);
                     indeceis.push(i1);
                     indeceis.push(i2);
                     indeceis.push(i3);
