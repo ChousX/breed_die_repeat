@@ -1,11 +1,11 @@
 //         +Y
-//      -Z  |
+//      +Z  |
 //       \  |
 //        \ |(0,0,0)
 //-X_______\|/________+X
 //          \
 //          |\
-//          | \+Z
+//          | \-Z
 //         -Y
 use bevy::{prelude::*, transform};
 use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
@@ -71,26 +71,31 @@ impl ChunkManager{
         false        
     }
 
-    ///wether or not a chunk exists with in the manager
+    ///wether or not a chunk cell exists with in the manager
     pub fn exists(&self, pos: (i32, i32, i32)) -> bool{
-    todo!()    
+        if let Some(_) = self.index(pos){
+            true
+        } else {
+            false
+        }
     }
 
     ///Get the Entity id if it exists
-    pub fn get(&self, pos: (i32, i32, i32)) -> Option<Entity>{
-        todo!()
-    } 
-
-    ///Get the Entity id if it exists and set the last to this postion
-    //(not really sure if this one is usfull)
-    pub fn get_change_last(&mut self, pos: (i32, i32, i32)) -> Option<&Entity>{
-        
-        todo!()
+    pub fn get(&self, pos: (i32, i32, i32)) -> Option<(Entity, (i32, i32, i32))>{
+        self.simple_get(self.index(pos)?)
     }
 
     ///Add an entity to the manager if one already exists do nothing and report the failer
     pub fn add(&mut self, entity: Entity, pos: (i32, i32, i32)) -> bool{
-        todo!()
+        if self.exists(pos){
+            return false;
+        }
+        
+        // Ok we need to actuly add it
+        // 1) check if we can just insert it as an x or do we need add y's and z's
+
+
+        true
     }
 
     ///Remove any unused z and y vecs
@@ -139,6 +144,21 @@ impl ChunkManager{
         None
     }
 
+    /// A helper fn for 
+    #[inline]
+    fn aux_index(&self, pos: (i32 , i32, i32)) -> Option<(i32, i32, i32)>{
+        let last = self.last?;
+        let (_, (x, y, z)) = self.simple_get(last)?;
+        let x = pos.0 - x;
+        let y = pos.1 - y;
+        let z = pos.2 - z;
+
+        let (lx, ly, lz) = last;
+
+        let (x, y, z) = (lx as i32 + x, ly as i32 + y, lz as i32 + z);
+        Some((x, y, z))
+    }
+    /// internal get operation
     fn simple_get(&self, pos: (usize, usize, usize)) -> Option<(Entity, (i32, i32, i32))>{
         self.chunks[pos.0][pos.1][pos.2]
     }
