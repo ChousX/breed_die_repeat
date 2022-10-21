@@ -13,7 +13,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
-
         .add_plugin(recorce::mResorcePlugin)
         .add_plugin(rts_camera::RtsCameraPlugin)
         .add_plugin(mob::MobPlugin)
@@ -31,9 +30,9 @@ fn init(
     //     .add_plain_size(1.0)
     //     .camera_state(false)
     //     .build(&mut commands, &mut meshes, &mut materials);
-    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (0,0,0));
-    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (-1,0,0));
-    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (1,0,0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (0, 0, 0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (-1, 0, 0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (1, 0, 0));
     rts_camera::build_camera(
         &mut commands,
         Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)),

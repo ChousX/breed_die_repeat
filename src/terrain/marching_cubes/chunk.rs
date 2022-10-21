@@ -23,7 +23,11 @@ type Space = [f32; CHUNK_SIZE_TOTALE];
 
 pub const CHUNK_SIZE: Size = (15, 15, 15);
 const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
-pub const CHUNK_VOLUME: (f32, f32, f32) = (CHUNK_SIZE.0 as f32 * ISO_DISTANCE - ISO_DISTANCE, CHUNK_SIZE.1 as f32 * ISO_DISTANCE - ISO_DISTANCE, CHUNK_SIZE.2 as f32 * ISO_DISTANCE - ISO_DISTANCE);
+pub const CHUNK_VOLUME: (f32, f32, f32) = (
+    CHUNK_SIZE.0 as f32 * ISO_DISTANCE - ISO_DISTANCE,
+    CHUNK_SIZE.1 as f32 * ISO_DISTANCE - ISO_DISTANCE,
+    CHUNK_SIZE.2 as f32 * ISO_DISTANCE - ISO_DISTANCE,
+);
 ///         +Y
 ///      -Z  |
 ///       \  |
@@ -144,7 +148,7 @@ impl Chunk {
 
 impl Chunk {
     pub fn march(&self) -> Mesh {
-        let mut vb = VertexBank::default(); 
+        let mut vb = VertexBank::default();
         let mut indeceis: Vec<u32> = Vec::new();
         let mut normal_list: Vec<([f32; 3], [usize; 3])> = Vec::new();
         let (mut x, mut y, mut z) = (0, 0, 0);
@@ -175,7 +179,9 @@ impl Chunk {
                 ]
             };
             x += 1;
-            if EDGE_TABLE[cc] == 0 {continue;}
+            if EDGE_TABLE[cc] == 0 {
+                continue;
+            }
             if EDGE_TABLE[cc] & 1 != 0 {
                 edges[0] = vertex_interp(SHEAR_POINT, p[0], p[1], cube[0], cube[1]);
             }
@@ -212,7 +218,6 @@ impl Chunk {
             if EDGE_TABLE[cc] & 2048 != 0 {
                 edges[11] = vertex_interp(SHEAR_POINT, p[3], p[7], cube[3], cube[7]);
             }
-
 
             {
                 let mut i = 0;
@@ -264,29 +269,32 @@ impl Chunk {
     }
 }
 
-impl Chunk{
+impl Chunk {
     pub fn spawn(
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
-        pos: (i32, i32, i32)
-    ){
+        pos: (i32, i32, i32),
+    ) {
         let mut chunk = Chunk::blank();
         chunk.add_plain(1);
         chunk.add_plain(2);
 
-        let transform = Transform::from_xyz(pos.0 as f32 * CHUNK_VOLUME.0, pos.1 as f32 * CHUNK_VOLUME.1, pos.2 as f32 * CHUNK_VOLUME.2);
+        let transform = Transform::from_xyz(
+            pos.0 as f32 * CHUNK_VOLUME.0,
+            pos.1 as f32 * CHUNK_VOLUME.1,
+            pos.2 as f32 * CHUNK_VOLUME.2,
+        );
 
-        commands.spawn_bundle(PbrBundle{
-            transform,
-            mesh: meshes.add(chunk.march()),
-            material: materials.add(
-                Color::rgb(0.2, 0.2, 0.4).into()
-            ),
-            ..default()
-        })
-        .insert(chunk)
-        .insert(DontView);
+        commands
+            .spawn_bundle(PbrBundle {
+                transform,
+                mesh: meshes.add(chunk.march()),
+                material: materials.add(Color::rgb(0.2, 0.2, 0.4).into()),
+                ..default()
+            })
+            .insert(chunk)
+            .insert(DontView);
     }
 }
 
