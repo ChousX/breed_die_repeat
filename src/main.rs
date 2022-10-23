@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::WorldInspectorPlugin;
-use bevy_rapier3d::prelude::*;
+use terrain::Chunk;
 
 mod game_govener;
 mod mob;
@@ -13,8 +13,6 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(recorce::mResorcePlugin)
         .add_plugin(rts_camera::RtsCameraPlugin)
         .add_plugin(mob::MobPlugin)
@@ -28,10 +26,13 @@ fn init(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    seenbuild::SeenBuilder::new()
-        .add_plain_size(1.0)
-        .camera_state(false)
-        .build(&mut commands, &mut meshes, &mut materials);
+    // seenbuild::SeenBuilder::new()
+    //     .add_plain_size(1.0)
+    //     .camera_state(false)
+    //     .build(&mut commands, &mut meshes, &mut materials);
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (0, 0, 0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (-1, 0, 0));
+    Chunk::spawn(&mut commands, &mut meshes, &mut materials, (1, 0, 0));
     rts_camera::build_camera(
         &mut commands,
         Transform::from_xyz(-2.0, 2.5, 5.0).with_rotation(Quat::from_rotation_x(-0.5)),

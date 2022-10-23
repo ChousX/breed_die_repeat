@@ -4,6 +4,8 @@ use bevy::render::render_resource::PrimitiveTopology;
 use noise::{NoiseFn, OpenSimplex, Seedable};
 use std::{collections::HashMap, mem::MaybeUninit};
 
+use crate::mob::DontView;
+
 use super::{
     table::*,
     vertex::{Vertex, VertexBank},
@@ -19,8 +21,13 @@ type Pos = [f32; 3];
 
 type Space = [f32; CHUNK_SIZE_TOTALE];
 
-const CHUNK_SIZE: Size = (10, 10, 10);
+pub const CHUNK_SIZE: Size = (15, 15, 15);
 const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
+pub const CHUNK_VOLUME: (f32, f32, f32) = (
+    CHUNK_SIZE.0 as f32 * ISO_DISTANCE - ISO_DISTANCE,
+    CHUNK_SIZE.1 as f32 * ISO_DISTANCE - ISO_DISTANCE,
+    CHUNK_SIZE.2 as f32 * ISO_DISTANCE - ISO_DISTANCE,
+);
 ///         +Y
 ///      -Z  |
 ///       \  |
@@ -41,6 +48,7 @@ type Cube = [f32; 8];
 
 const ISO_DISTANCE: f32 = 1.0;
 
+#[derive(Component)]
 pub struct Chunk {
     space: Space,
     pub changed: bool,
@@ -114,12 +122,12 @@ impl Chunk {
     ///| \                               \             |\               |\
     ///|  \                               \            | \              | \
     ///|   \                               \           |  \             |  \          
-    /// \   \                               \          |   7____________|__6\                 
-    ///  \  |\---\---------------------------\        0|___|____________1   |     
-    ///   \ | V___\___________________________\        \   |             \  |
-    ///     | |    |                          |         \  |              \ |
-    ///      \|    |                          |          \ |               \|
-    ///       \____|__________________________|           \|3_______________2     
+    ///|\   \                               \          |   7____________|__6\                 
+    ///| \  |\---\---------------------------\        0|___|____________1   |     
+    ///|  \ | V___\___________________________\        \   |             \  |
+    ///\    | |    |                          |         \  |              \ |
+    /// \   |\|    |                          |          \ |               \|
+    ///  \  | \____|__________________________|           \|3_______________2     
     fn p_cube(space: &[f32; CHUNK_SIZE_TOTALE], zz: (Index, Index, Index)) -> Cube {
         let (x, y, z) = zz;
         let (v0, v1, v2, v3, v4, v5, v6, v7) = (
@@ -144,7 +152,7 @@ impl Chunk {
         let mut indeceis: Vec<u32> = Vec::new();
         let mut normal_list: Vec<([f32; 3], [usize; 3])> = Vec::new();
         let (mut x, mut y, mut z) = (0, 0, 0);
-        for (i, cube) in self.cubes().enumerate() {
+        for cube in self.cubes() {
             let mut edges: [[f32; 3]; 12] = [[0.0000f32; 3]; 12];
             if x == CHUNK_SIZE.0 - 1 {
                 x = 0;
@@ -158,7 +166,7 @@ impl Chunk {
 
             const D: f32 = ISO_DISTANCE;
             let p: [[f32; 3]; 8] = {
-                let (x, y, z) = (x as f32 * D, y as f32 * D, z as f32 * D);
+                let (x, y, z) = (x as f32 * D, y as f32 * -D, z as f32 * D);
                 [
                     [x, y, z + D],         //0
                     [x + D, y, z + D],     //1
@@ -171,7 +179,9 @@ impl Chunk {
                 ]
             };
             x += 1;
-            if EDGE_TABLE[cc] == 0 {}
+            if EDGE_TABLE[cc] == 0 {
+                continue;
+            }
             if EDGE_TABLE[cc] & 1 != 0 {
                 edges[0] = vertex_interp(SHEAR_POINT, p[0], p[1], cube[0], cube[1]);
             }
@@ -209,23 +219,24 @@ impl Chunk {
                 edges[11] = vertex_interp(SHEAR_POINT, p[3], p[7], cube[3], cube[7]);
             }
 
-            let mut i = 0;
-
-            while TRI_TABLE[cc][i] != -1 {
-                let p1 = edges[TRI_TABLE[cc][i] as usize].into();
-                let p2 = edges[TRI_TABLE[cc][i + 1] as usize].into();
-                let p3 = edges[TRI_TABLE[cc][i + 2] as usize].into();
-                let i1 = vb.id(p1);
-                let i2 = vb.id(p2);
-                let i3 = vb.id(p3);
-                indeceis.push(i1);
-                indeceis.push(i2);
-                indeceis.push(i3);
-                normal_list.push((
-                    surface_normal(p1, p2, p3),
-                    [i1 as usize, i2 as usize, i3 as usize],
-                ));
-                i += 3;
+            {
+                let mut i = 0;
+                while TRI_TABLE[cc][i] != -1 {
+                    let p1 = edges[TRI_TABLE[cc][i] as usize].into();
+                    let p2 = edges[TRI_TABLE[cc][i + 1] as usize].into();
+                    let p3 = edges[TRI_TABLE[cc][i + 2] as usize].into();
+                    let i1 = vb.id(p3);
+                    let i2 = vb.id(p2);
+                    let i3 = vb.id(p1);
+                    indeceis.push(i1);
+                    indeceis.push(i2);
+                    indeceis.push(i3);
+                    normal_list.push((
+                        surface_normal(p1, p2, p3),
+                        [i1 as usize, i2 as usize, i3 as usize],
+                    ));
+                    i += 3;
+                }
             }
         }
 
@@ -241,13 +252,49 @@ impl Chunk {
             normals[pos[2]] += v;
             normals[pos[2]] /= 2.;
         }
-        let normals: Vec<[f32; 3]> = normals.into_iter().map(|v| [v.x, v.y, v.z]).collect();
+
+        let normals: Vec<[f32; 3]> = normals
+            .into_iter()
+            .map(|mut v| {
+                //v = -v;
+                [v.x, v.y, v.z]
+            })
+            .collect();
 
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
         mesh.set_indices(Some(Indices::U32(indeceis)));
         mesh
+    }
+}
+
+impl Chunk {
+    pub fn spawn(
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+        pos: (i32, i32, i32),
+    ) {
+        let mut chunk = Chunk::blank();
+        chunk.add_plain(1);
+        chunk.add_plain(2);
+
+        let transform = Transform::from_xyz(
+            pos.0 as f32 * CHUNK_VOLUME.0,
+            pos.1 as f32 * CHUNK_VOLUME.1,
+            pos.2 as f32 * CHUNK_VOLUME.2,
+        );
+
+        commands
+            .spawn_bundle(PbrBundle {
+                transform,
+                mesh: meshes.add(chunk.march()),
+                material: materials.add(Color::rgb(0.2, 0.2, 0.4).into()),
+                ..default()
+            })
+            .insert(chunk)
+            .insert(DontView);
     }
 }
 

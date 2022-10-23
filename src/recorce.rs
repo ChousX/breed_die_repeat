@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::Inspectable;
-use bevy_rapier3d::{parry::transformation, prelude::*};
 
 pub struct mResorcePlugin;
 impl Plugin for mResorcePlugin {
