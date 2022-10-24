@@ -54,10 +54,10 @@ impl ChunkManager {
 
         // Ok we need to actuly add it
         // 1) check if we can just insert it as an x or do we need add y's and z's
-        if let Some(mut last) = self.last{
+        if let Some(last) = self.last{
             // 2) agust the y's and z's if needed
-            let (x, y, z) = last;
-            let (_, (lx, ly, lz)) = self.chunks[z][y][x].expect("");
+            let (mut x, mut y, mut z) = last;
+            let (_, (lx, ly, lz)) = self.chunks[z][y][x].expect("? how");
 
             while pos.2 > (self.chunks.len() - z) as i32 + lz{
                 self.chunks.push_back(VecDeque::new());
@@ -84,7 +84,7 @@ impl ChunkManager {
                 for _ in 0..nz{
                     self.chunks.push_front(VecDeque::new());
                 }
-                last.2 += nz;
+                z += nz;
             }
 
             if ny < 0{
@@ -92,15 +92,20 @@ impl ChunkManager {
                 for _ in 0..ny{
                     self.chunks[z].push_front(VecDeque::new());
                 }
-                last.1 += ny;
+                y += ny;
             }
 
             if nx < 0{
-                for _ in 0..nx.abs(){
-                    self.chunks[z][y].push_front();
+                let nx = nx.abs() as usize;
+                for _ in 0..nx{
+                    self.chunks[z][y].push_front(None);
                 }
+                x += nx;
             }
-        
+
+            self.last = Some((x, y, z));
+            let (x, y, z) = self.index(pos).expect("well something is not right this should work");
+            self.chunks[z][y][x] = Some((entity, pos))
         } else {
             assert_eq!(true, self.chunks.is_empty());
             self.chunks.push_back(VecDeque::new());
