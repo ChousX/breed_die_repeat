@@ -37,6 +37,10 @@ impl ChunkManager {
         }
     }
 
+    pub fn empty(&self) -> bool{
+        todo!()
+    }
+
     ///Get the Entity id if it exists
     pub fn get(&self, pos: (i32, i32, i32)) -> Option<(Entity, (i32, i32, i32))> {
         self.simple_get(self.index(pos)?)
@@ -50,9 +54,53 @@ impl ChunkManager {
 
         // Ok we need to actuly add it
         // 1) check if we can just insert it as an x or do we need add y's and z's
-        if let Some(last) = self.last{
- 
+        if let Some(mut last) = self.last{
+            // 2) agust the y's and z's if needed
+            let (x, y, z) = last;
+            let (_, (lx, ly, lz)) = self.chunks[z][y][x].expect("");
 
+            while pos.2 > (self.chunks.len() - z) as i32 + lz{
+                self.chunks.push_back(VecDeque::new());
+            }
+
+            while pos.1 > (self.chunks[z].len() - y) as i32 + ly{
+                self.chunks[z].push_back(VecDeque::new());
+            }
+
+            while pos.0 > (self.chunks[z][y].len() - x) as i32 + lx{
+                self.chunks[z][y].push_back(None);
+            }
+
+            let lz00 = lz - z as i32;
+            let ly00 = ly - y as i32;
+            let lx00 = lx - x as i32;
+
+            let nz = pos.2 - lz00;
+            let ny = pos.1 - ly00;
+            let nx = pos.0 - lx00;
+
+            if nz < 0{
+                let nz = nz.abs() as usize;
+                for _ in 0..nz{
+                    self.chunks.push_front(VecDeque::new());
+                }
+                last.2 += nz;
+            }
+
+            if ny < 0{
+                let ny = nz.abs() as usize;
+                for _ in 0..ny{
+                    self.chunks[z].push_front(VecDeque::new());
+                }
+                last.1 += ny;
+            }
+
+            if nx < 0{
+                for _ in 0..nx.abs(){
+                    self.chunks[z][y].push_front();
+                }
+            }
+        
         } else {
             assert_eq!(true, self.chunks.is_empty());
             self.chunks.push_back(VecDeque::new());
@@ -63,9 +111,7 @@ impl ChunkManager {
 
         }
         
-        // 2) agust the y's and z's if needed
-        // 3) insert it!
-        // 4) incroment loaded
+        self.loaded += 1;
 
         true
     }
