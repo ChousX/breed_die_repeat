@@ -38,7 +38,7 @@ impl ChunkManager {
     }
 
     pub fn empty(&self) -> bool{
-        todo!()
+        self.last.is_none()
     }
 
     ///Get the Entity id if it exists
