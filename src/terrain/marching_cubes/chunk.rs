@@ -261,6 +261,7 @@ impl Chunk {
             })
             .collect();
 
+        indeceis.reverse();
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);

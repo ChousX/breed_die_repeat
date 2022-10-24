@@ -50,6 +50,19 @@ impl ChunkManager {
 
         // Ok we need to actuly add it
         // 1) check if we can just insert it as an x or do we need add y's and z's
+        if let Some(last) = self.last{
+ 
+
+        } else {
+            assert_eq!(true, self.chunks.is_empty());
+            self.chunks.push_back(VecDeque::new());
+            assert_eq!(self.chunks.len(), 1);
+            self.chunks[0].push_back(VecDeque::new());
+            assert_eq!(self.chunks[0].len(), 1);
+            self.chunks[0][0].push_back(Some((entity, pos)));
+
+        }
+        
         // 2) agust the y's and z's if needed
         // 3) insert it!
         // 4) incroment loaded
