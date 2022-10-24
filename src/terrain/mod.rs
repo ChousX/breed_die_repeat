@@ -5,7 +5,12 @@ pub use marching_cubes::*;
 
 pub struct TerrainPlugin;
 impl Plugin for TerrainPlugin {
-    fn build(&self, app: &mut App) {}
+    fn build(&self, app: &mut App) {
+        app
+            .init_resource::<ChunkManager>()
+            .add_system(system)
+            ;
+    }
 }
 
 #[derive(Bundle)]

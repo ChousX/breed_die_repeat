@@ -17,6 +17,8 @@ use vertex::*;
 mod chunk;
 pub use chunk::*;
 
+use crate::mob::DontView;
+
 mod table;
 #[derive(Component)]
 pub struct ChunkLoader(u16);
@@ -105,7 +107,8 @@ impl ChunkManager {
 
             self.last = Some((x, y, z));
             let (x, y, z) = self.index(pos).expect("well something is not right this should work");
-            self.chunks[z][y][x] = Some((entity, pos))
+            self.chunks[z][y][x] = Some((entity, pos));
+            self.last = Some((x, y, z));
         } else {
             assert_eq!(true, self.chunks.is_empty());
             self.chunks.push_back(VecDeque::new());
@@ -117,13 +120,15 @@ impl ChunkManager {
         }
         
         self.loaded += 1;
+        
 
         true
     }
 
     ///Remove any unused z and y vecs
     pub fn cull(&mut self) {
-        todo!()
+        if self.empty(){return;}
+        todo!();
     }
 
     ///Remove and return the Entity. if there is nothing there reter None as well.
@@ -184,4 +189,25 @@ impl Default for ChunkManager{
             loaded: 0,
         }
     }
+}
+
+pub fn spawn_chunk(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    pos: (i32, i32, i32),
+    chunk: Chunk,
+) -> (Entity, (i32, i32, i32)){
+        let entity = commands
+            .spawn_bundle(PbrBundle {
+                mesh: meshes.add(chunk.march()),
+                material: materials
+                    .add(Color::rgb(0.2, 0.2, 0.4).into()),
+                transform: Transform::from_xyz(pos.0 as f32 * CHUNK_VOLUME.0, pos.1 as f32* CHUNK_VOLUME.1, pos.2 as f32 * CHUNK_VOLUME.2),
+                ..default()
+            })
+            .insert(chunk)
+            .insert(DontView)
+            .id();
+        (entity, pos)
 }
