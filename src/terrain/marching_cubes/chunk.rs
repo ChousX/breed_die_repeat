@@ -19,7 +19,8 @@ type Size = (usize, usize, usize);
 ///(x,y,z)
 type Pos = [f32; 3];
 
-type Space = [f32; CHUNK_SIZE_TOTALE];
+//type Space = [f32; CHUNK_SIZE_TOTALE];
+type Space = [[[f32; CHUNK_SIZE.0]; CHUNK_SIZE.1]; CHUNK_SIZE.2];
 
 pub const CHUNK_SIZE: Size = (15, 15, 15);
 const CHUNK_SIZE_TOTALE: Index = CHUNK_SIZE.0 * CHUNK_SIZE.1 * CHUNK_SIZE.2;
@@ -71,7 +72,7 @@ impl Chunk {
     }
 
     pub fn blank() -> Self {
-        let space: Space = [f32::MIN; CHUNK_SIZE_TOTALE];
+        let space: Space = [[[f32::MIN; CHUNK_SIZE.0]; CHUNK_SIZE.1]; CHUNK_SIZE.2];
         Self::new(space)
     }
 
@@ -84,32 +85,36 @@ impl Chunk {
     }
 
     pub fn set(&mut self, x: usize, y: usize, z: usize, val: f32) {
-        let mut s_val = &mut self.space[to1D(x, y, z)];
-        if *s_val != val {
-            *s_val = val;
-            self.changed = true;
+        if self.space[z][y][x] != val{
+            self.space[z][y][x] = val;
+            self.changed = true
         }
+
+        
     }
 
     pub fn rng(seed: Option<u32>) -> Self {
         let mut noise = OpenSimplex::new(if let Some(seed) = seed { seed } else { 0 });
 
         let mut space: Space = {
-            let mut space: [MaybeUninit<f32>; CHUNK_SIZE_TOTALE] =
+            let mut space: [MaybeUninit<[[f32; CHUNK_SIZE.0]; CHUNK_SIZE.1]>; CHUNK_SIZE.2] =
                 unsafe { MaybeUninit::uninit().assume_init() };
 
-            let mut index = 0;
+            
             for z in 0..CHUNK_SIZE.2 {
+                let mut why: [MaybeUninit<[f32; CHUNK_SIZE.0]>; CHUNK_SIZE.1] =
+                unsafe { MaybeUninit::uninit().assume_init() };
                 for y in 0..CHUNK_SIZE.1 {
+                    let mut ex: [MaybeUninit<f32>; CHUNK_SIZE.0] =
+                    unsafe { MaybeUninit::uninit().assume_init() };
                     for x in 0..CHUNK_SIZE.0 {
-                        space[index] =
-                            MaybeUninit::new(noise.get([x as f64, y as f64, z as f64]) as f32);
-                        index += 1;
+                        ex[x] = MaybeUninit::new(noise.get([x as f64, y as f64, z as f64]) as f32);
                     }
+                    why[y] = MaybeUninit::new(unsafe { std::mem::transmute::<_, [f32; CHUNK_SIZE.0]>(ex) });
                 }
+                space[z] = MaybeUninit::new(unsafe { std::mem::transmute::<_, [[f32; CHUNK_SIZE.0]; CHUNK_SIZE.1]>(why) });
             }
-
-            unsafe { std::mem::transmute::<_, [f32; CHUNK_SIZE_TOTALE]>(space) }
+            unsafe { std::mem::transmute::<_, [[[f32; CHUNK_SIZE.0]; CHUNK_SIZE.1]; CHUNK_SIZE.2]>(space) }
         };
 
         Self::new(space)
@@ -128,21 +133,16 @@ impl Chunk {
     ///\    | |    |                          |         \  |              \ |
     /// \   |\|    |                          |          \ |               \|
     ///  \  | \____|__________________________|           \|3_______________2     
-    fn p_cube(space: &[f32; CHUNK_SIZE_TOTALE], zz: (Index, Index, Index)) -> Cube {
+    fn p_cube(space: &Space, zz: (Index, Index, Index)) -> Cube {
         let (x, y, z) = zz;
-        let (v0, v1, v2, v3, v4, v5, v6, v7) = (
-            to1D(x, y, z + 1),
-            to1D(x + 1, y, z + 1),
-            to1D(x + 1, y, z),
-            to1D(x, y, z),
-            to1D(x, y + 1, z + 1),
-            to1D(x + 1, y + 1, z + 1),
-            to1D(x + 1, y + 1, z),
-            to1D(x, y + 1, z),
-        );
-        [
-            space[v0], space[v1], space[v2], space[v3], space[v4], space[v5], space[v6], space[v7],
-        ]
+            [space[z+1][y][x],
+            space[z+1][y][x+1],
+            space[z][y][x+1],
+            space[z][y][x],
+            space[z+1][y+1][x],
+            space[z+1][y+1][x+1],
+            space[z][y+1][x+1],
+            space[z][y +1][x]]
     }
 }
 
