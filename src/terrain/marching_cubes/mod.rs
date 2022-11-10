@@ -9,6 +9,7 @@
 //         -Y
 use bevy::prelude::*;
 use bevy::render::{mesh::Indices, render_resource::PrimitiveTopology};
+use ordered_float::Float;
 use std::collections::VecDeque;
 
 mod vertex;
@@ -17,9 +18,11 @@ use vertex::*;
 mod chunk;
 pub use chunk::*;
 
+use crate::mob::DontView;
+
 mod table;
-#[derive(Component)]
-pub struct ChunkLoader(u16);
+#[derive(Component, Deref, DerefMut)]
+pub struct ChunkLoader(pub u16);
 
 pub struct ChunkManager {
     chunks: VecDeque<VecDeque<VecDeque<Option<(Entity, (i32, i32, i32))>>>>,
@@ -37,6 +40,10 @@ impl ChunkManager {
         }
     }
 
+    pub fn empty(&self) -> bool {
+        self.last.is_none()
+    }
+
     ///Get the Entity id if it exists
     pub fn get(&self, pos: (i32, i32, i32)) -> Option<(Entity, (i32, i32, i32))> {
         self.simple_get(self.index(pos)?)
@@ -50,23 +57,88 @@ impl ChunkManager {
 
         // Ok we need to actuly add it
         // 1) check if we can just insert it as an x or do we need add y's and z's
-        // 2) agust the y's and z's if needed
-        // 3) insert it!
-        // 4) incroment loaded
+        if let Some(last) = self.last {
+            // 2) agust the y's and z's if needed
+            let (mut x, mut y, mut z) = last;
+            let (_, (lx, ly, lz)) = self.chunks[z][y][x].expect("? how");
+
+            while pos.2 > (self.chunks.len() - z) as i32 + lz {
+                self.chunks.push_back(VecDeque::new());
+            }
+
+            while pos.1 > (self.chunks[z].len() - y) as i32 + ly {
+                self.chunks[z].push_back(VecDeque::new());
+            }
+
+            while pos.0 > (self.chunks[z][y].len() - x) as i32 + lx {
+                self.chunks[z][y].push_back(None);
+            }
+
+            let lz00 = lz - z as i32;
+            let ly00 = ly - y as i32;
+            let lx00 = lx - x as i32;
+
+            let nz = pos.2 - lz00;
+            let ny = pos.1 - ly00;
+            let nx = pos.0 - lx00;
+
+            if nz < 0 {
+                let nz = nz.abs() as usize;
+                for _ in 0..nz {
+                    self.chunks.push_front(VecDeque::new());
+                }
+                z += nz;
+            }
+
+            if ny < 0 {
+                let ny = nz.abs() as usize;
+                for _ in 0..ny {
+                    self.chunks[z].push_front(VecDeque::new());
+                }
+                y += ny;
+            }
+
+            if nx < 0 {
+                let nx = nx.abs() as usize;
+                for _ in 0..nx {
+                    self.chunks[z][y].push_front(None);
+                }
+                x += nx;
+            }
+
+            self.last = Some((x, y, z));
+            let (x, y, z) = self
+                .index(pos)
+                .expect("well something is not right this should work");
+            self.chunks[z][y][x] = Some((entity, pos));
+            self.last = Some((x, y, z));
+        } else {
+            assert_eq!(true, self.chunks.is_empty());
+            self.chunks.push_back(VecDeque::new());
+            assert_eq!(self.chunks.len(), 1);
+            self.chunks[0].push_back(VecDeque::new());
+            assert_eq!(self.chunks[0].len(), 1);
+            self.chunks[0][0].push_back(Some((entity, pos)));
+        }
+
+        self.loaded += 1;
 
         true
     }
 
     ///Remove any unused z and y vecs
     pub fn cull(&mut self) {
-        todo!()
+        if self.empty() {
+            return;
+        }
+        todo!();
     }
 
     ///Remove and return the Entity. if there is nothing there reter None as well.
     pub fn pop(&mut self, pos: (i32, i32, i32)) -> Option<Entity> {
         let (x, y, z) = self.index(pos)?;
-        let (output,_) = self.chunks[z][y][x]?; 
-        self.chunks[z][y][x] =  None;
+        let (output, _) = self.chunks[z][y][x]?;
+        self.chunks[z][y][x] = None;
         Some(output)
     }
 
@@ -112,12 +184,44 @@ impl ChunkManager {
     }
 }
 
-impl Default for ChunkManager{
+impl Default for ChunkManager {
     fn default() -> Self {
-        Self{
+        Self {
             chunks: VecDeque::with_capacity(CHUNK_SIZE.2),
             last: None,
             loaded: 0,
         }
     }
+}
+
+pub fn spawn_chunk(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    pos: (i32, i32, i32),
+    chunk: Chunk,
+) -> (Entity, (i32, i32, i32)) {
+    let entity = commands
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(chunk.march()),
+            material: materials.add(Color::rgb(0.2, 0.2, 0.4).into()),
+            transform: Transform::from_xyz(
+                pos.0 as f32 * CHUNK_VOLUME.0,
+                pos.1 as f32 * CHUNK_VOLUME.1,
+                pos.2 as f32 * CHUNK_VOLUME.2,
+            ),
+            ..default()
+        })
+        .insert(chunk)
+        .insert(DontView)
+        .id();
+    (entity, pos)
+}
+
+pub fn chunk_id(pos: (f32, f32, f32)) -> (i32, i32, i32) {
+    (
+        (pos.0 / CHUNK_VOLUME.0).floor() as i32,
+        (pos.1 / CHUNK_VOLUME.1).floor() as i32,
+        (pos.2 / CHUNK_VOLUME.2).floor() as i32,
+    )
 }

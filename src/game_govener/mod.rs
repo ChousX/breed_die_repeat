@@ -1,5 +1,6 @@
 use crate::mob::*;
 use crate::recorce::ResorceSpawnEvent;
+use crate::terrain::ChunkLoader;
 use bevy::prelude::*;
 use rand::prelude::*;
 
@@ -55,5 +56,6 @@ fn spawn_slimes(
             material: materials.add(Color::BLUE.into()),
             ..default()
         })
-        .insert_bundle(MobBundle { ..default() });
+        .insert_bundle(MobBundle { ..default() })
+        .insert(ChunkLoader(2));
 }
